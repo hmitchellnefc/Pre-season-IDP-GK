@@ -1,0 +1,1733 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player IDP</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --paper:#f7f7f4;
+    --paper-raised:#ffffff;
+    --paper-sunken:#eceae3;
+    --ink:#211d17;
+    --ink-soft:#5a5346;
+    --ink-muted:#8a8272;
+    --border:rgba(33,29,23,0.14);
+    --border-strong:rgba(33,29,23,0.28);
+    --pitch:#b6791c;
+    --pitch-deep:#8a5a12;
+    --pitch-wash:rgba(182,121,28,0.12);
+    --on-pitch:#ffffff;
+    --bar-grey-bg:#9a9488;
+    --bar-grey-ink:#211d17;
+    --bar-gold-bg:#e0a940;
+    --bar-gold-ink:#241a05;
+    --bar-green-bg:#8fbf5a;
+    --bar-green-ink:#132608;
+    --bar-red-bg:#dd8f83;
+    --bar-red-ink:#2c0e08;
+    --bar-technical-bg:#4a86c8;
+    --bar-technical-ink:#ffffff;
+    --bar-technical-wash:rgba(74,134,200,0.12);
+    --bar-tactical-bg:#d1483f;
+    --bar-tactical-ink:#ffffff;
+    --bar-tactical-wash:rgba(209,72,63,0.12);
+    --bar-physical-bg:#e8b93f;
+    --bar-physical-ink:#3a2c05;
+    --bar-physical-wash:rgba(232,185,63,0.16);
+    --bar-psychosocial-bg:#4f9e5c;
+    --bar-psychosocial-ink:#ffffff;
+    --bar-psychosocial-wash:rgba(79,158,92,0.12);
+    --band-1:#c8574a;
+    --band-2:#d68e3c;
+    --band-3:#d3b93f;
+    --band-4:#7fae52;
+    --band-5:#3f8f55;
+    --danger:#b3483d;
+    --danger-wash:rgba(179,72,61,0.10);
+    --good:#3f8f55;
+    --good-wash:rgba(63,143,85,0.10);
+    --warn:#c9a233;
+    --warn-wash:rgba(201,162,51,0.12);
+    --shadow: 0 1px 2px rgba(20,18,12,0.06), 0 8px 24px rgba(20,18,12,0.06);
+    --font-display:'Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-body:'Montserrat',-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  /* Dark mode intentionally omitted — this page always renders in its
+     light, high-contrast palette so it stays friendly and readable for
+     young players regardless of device theme settings. */
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--pitch-wash); }
+  h1,h2,h3{ font-family:var(--font-display); font-weight:700; letter-spacing:0.01em; text-wrap:balance; margin:0; }
+  p{ margin:0; }
+  input,select,textarea,button{ font-family:inherit; font-size:inherit; color:inherit; }
+  input,select,textarea{
+    background:var(--paper-raised); border:1px solid var(--border-strong); border-radius:7px;
+    padding:8px 10px; width:100%;
+  }
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{
+    outline:2px solid var(--pitch); outline-offset:1px;
+  }
+  textarea{ resize:vertical; min-height:60px; font-family:var(--font-body); }
+  button{ cursor:pointer; }
+  .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+
+  a{ color:var(--pitch-deep); }
+
+  /* ---------- shell ---------- */
+  #app{ max-width:900px; margin:0 auto; padding:0 20px 64px; }
+  .topbar{
+    position:sticky; top:0; z-index:20; background:var(--paper);
+    padding:16px 0 12px; border-bottom:1px solid var(--border);
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .topbar-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand .dot{ width:10px; height:10px; border-radius:50%; background:var(--pitch); flex:none; }
+  .brand h1{ font-size:1.5rem; color:var(--ink); }
+  .brand .sub{ font-size:0.78rem; color:var(--ink-muted); font-family:var(--font-mono); }
+  .progress-strip{ display:flex; align-items:center; gap:10px; font-size:0.76rem; color:var(--ink-muted); font-family:var(--font-mono); }
+  .progress-track{ flex:1; height:6px; border-radius:4px; background:var(--paper-sunken); overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--pitch); border-radius:4px; transition:width 0.25s ease; }
+  .avg-chip{
+    font-family:var(--font-mono); font-size:0.78rem; padding:3px 9px; border-radius:20px;
+    background:var(--pitch-wash); color:var(--pitch-deep); font-weight:600; flex:none;
+  }
+
+  .view{ display:none; padding-top:22px; }
+  .view.active{ display:block; }
+
+  /* ---------- cards / sections ---------- */
+  .card{
+    background:var(--paper-raised); border:1px solid var(--border); border-radius:14px;
+    padding:22px 24px; margin-bottom:18px; box-shadow:var(--shadow);
+  }
+  .card-header{
+    display:flex; align-items:center; gap:10px;
+    margin:-22px -24px 16px; padding:13px 24px; border-radius:14px 14px 0 0;
+    background:var(--paper-sunken); color:var(--ink);
+  }
+  .card-header.bar-grey{ background:var(--bar-grey-bg); color:var(--bar-grey-ink); }
+  .card-header.bar-gold{ background:var(--bar-gold-bg); color:var(--bar-gold-ink); }
+  .card-header.bar-green{ background:var(--bar-green-bg); color:var(--bar-green-ink); }
+  .card-header.bar-red{ background:var(--bar-red-bg); color:var(--bar-red-ink); }
+  .card-header.bar-technical{ background:var(--bar-technical-bg); color:var(--bar-technical-ink); }
+  .card-header.bar-tactical{ background:var(--bar-tactical-bg); color:var(--bar-tactical-ink); }
+  .card-header.bar-physical{ background:var(--bar-physical-bg); color:var(--bar-physical-ink); }
+  .card-header.bar-psychosocial{ background:var(--bar-psychosocial-bg); color:var(--bar-psychosocial-ink); }
+  .card-header h2{ font-size:1.1rem; color:inherit; }
+  .card-intro{ font-size:0.86rem; color:var(--ink-muted); margin-top:6px; line-height:1.5; }
+  .field-label{ font-size:0.78rem; font-weight:600; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:5px; }
+  .field-row{ display:flex; flex-direction:column; gap:5px; margin-top:14px; }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  @media (max-width:640px){ .grid-2,.grid-4{ grid-template-columns:1fr; } }
+
+  /* ---------- category sections (technical/tactical/...) ---------- */
+  .cat-card .card-header .cat-count{
+    margin-left:auto; font-family:var(--font-mono); font-size:0.74rem; color:inherit;
+    background:rgba(0,0,0,0.14); padding:2px 8px; border-radius:20px; flex:none;
+  }
+  .cat-card .card-header .cat-avg{
+    font-family:var(--font-mono); font-size:0.74rem; font-weight:700; color:inherit;
+    background:rgba(0,0,0,0.14); padding:2px 8px; border-radius:20px; flex:none;
+  }
+  .rating-row{
+    display:flex; flex-direction:column; gap:10px;
+    padding:12px 0; border-top:1px dashed var(--border);
+  }
+  .rating-row:first-of-type{ border-top:none; padding-top:16px; }
+  .rating-label{ font-weight:600; font-size:0.88rem; color:var(--ink); }
+  .rating-desc{ font-size:0.78rem; color:var(--ink-muted); margin-top:2px; line-height:1.4; }
+  .rating-controls{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .score-scale{ display:flex; gap:4px; flex-wrap:wrap; flex:none; }
+  .score-btn{
+    width:28px; height:28px; border-radius:7px; text-align:center;
+    font-family:var(--font-mono); font-weight:700; font-size:0.76rem; padding:0;
+    border:1px solid var(--border-strong); background:var(--paper-sunken); color:var(--ink-muted);
+    cursor:pointer; transition:transform 0.08s ease;
+  }
+  .score-btn:hover{ border-color:var(--pitch); color:var(--ink); }
+  .score-btn:active{ transform:scale(0.9); }
+  .score-btn.selected.band-1{ background:var(--band-1); border-color:var(--band-1); color:#fff; }
+  .score-btn.selected.band-2{ background:var(--band-2); border-color:var(--band-2); color:#2a1c08; }
+  .score-btn.selected.band-3{ background:var(--band-3); border-color:var(--band-3); color:#2a2408; }
+  .score-btn.selected.band-4{ background:var(--band-4); border-color:var(--band-4); color:#0e2408; }
+  .score-btn.selected.band-5{ background:var(--band-5); border-color:var(--band-5); color:#fff; }
+  .rating-controls .note-input{ flex:1; min-width:160px; }
+  .note-input{ font-size:0.84rem; }
+  @media (max-width:640px){
+    .score-btn{ width:25px; height:25px; font-size:0.7rem; }
+  }
+
+  /* ---------- scale legend ---------- */
+  .legend{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:14px; }
+  .legend-cell{ border-radius:9px; padding:10px 10px 12px; font-size:0.72rem; line-height:1.4; color:#fff; }
+  .legend-cell .lg-title{ font-weight:700; font-size:0.76rem; margin-bottom:4px; }
+  .legend-cell .lg-range{ font-family:var(--font-mono); font-weight:700; font-size:0.95rem; margin-top:8px; }
+  .legend-cell.b1{ background:var(--band-1); }
+  .legend-cell.b2{ background:var(--band-2); color:#2a1c08; }
+  .legend-cell.b3{ background:var(--band-3); color:#2a2408; }
+  .legend-cell.b4{ background:var(--band-4); color:#0e2408; }
+  .legend-cell.b5{ background:var(--band-5); }
+  @media (max-width:640px){ .legend{ grid-template-columns:1fr 1fr; } }
+
+  /* ---------- positions ---------- */
+  .position-grid{ display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
+  .position-chip{
+    border:1px solid var(--border-strong); border-radius:20px; padding:8px 16px; font-size:0.86rem;
+    background:var(--paper-raised); font-weight:600; color:var(--ink-soft); user-select:none;
+  }
+  .position-chip input{ display:none; }
+  .position-chip.checked{ background:var(--pitch); border-color:var(--pitch); color:#fff; }
+
+  /* ---------- strengths / improvements ---------- */
+  .si-row{ display:grid; grid-template-columns:140px 1fr 1.4fr; gap:6px 10px; align-items:center; margin-top:10px; }
+  .si-row .si-tag{
+    font-family:var(--font-mono); font-size:0.7rem; font-weight:700; letter-spacing:0.04em;
+    padding:7px 8px; border-radius:7px; text-align:center; background:var(--paper-sunken); color:var(--ink-soft);
+  }
+  .si-row select.auto-filled{ border-color:var(--good); background:var(--good-wash); }
+  .si-row select.needs-tiebreak{ border-color:var(--warn); background:var(--warn-wash); }
+  .si-row .si-hint{ grid-column:2 / span 2; font-size:0.72rem; color:var(--ink-muted); }
+  @media (max-width:640px){ .si-row{ grid-template-columns:1fr; } .si-row .si-tag{ text-align:left; } .si-row .si-hint{ grid-column:1; } }
+  .si-example{ font-size:0.78rem; color:var(--ink-muted); font-style:italic; margin-top:10px; }
+
+  /* ---------- SMART goals ---------- */
+  .smart-hint{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:14px; margin-bottom:4px;
+  }
+  .smart-hint div{ background:var(--paper-sunken); border-radius:9px; padding:10px; font-size:0.72rem; line-height:1.4; }
+  .smart-hint b{ display:block; font-size:0.76rem; margin-bottom:3px; color:var(--ink-soft); }
+  @media (max-width:640px){ .smart-hint{ grid-template-columns:1fr 1fr; } }
+  details.example-box{
+    margin-top:14px; background:var(--paper-sunken); border-radius:9px; padding:10px 14px;
+    font-size:0.8rem; color:var(--ink-soft);
+  }
+  details.example-box summary{ cursor:pointer; font-weight:600; color:var(--ink); }
+  details.example-box .ex-line{ margin-top:8px; line-height:1.5; }
+  details.example-box .ex-line b{ color:var(--ink); }
+
+  .goal-block{ margin-top:20px; padding-top:18px; border-top:1px solid var(--border); }
+  .goal-block:first-of-type{ margin-top:14px; }
+  .goal-block h3{ font-size:1rem; color:var(--pitch-deep); margin-bottom:10px; }
+  .sscarow{ display:grid; grid-template-columns:110px 1fr; gap:12px; margin-top:8px; align-items:start; }
+  .sscarow .ssc-tag{
+    font-family:var(--font-mono); font-weight:700; font-size:0.72rem; text-align:center; border-radius:7px;
+    padding:9px 6px; align-self:stretch; display:flex; align-items:center; justify-content:center;
+  }
+  .ssc-tag.stop{ background:var(--danger-wash); color:var(--danger); }
+  .ssc-tag.start{ background:var(--warn-wash); color:var(--warn); }
+  .ssc-tag.cont{ background:var(--good-wash); color:var(--good); }
+  @media (max-width:640px){ .sscarow{ grid-template-columns:1fr; } }
+  /* Stop/Start/Continue answer boxes get a light background tint matching
+     their goal's category color, so it's visually clear at a glance which
+     goal (Technical/Tactical/Psycho-Social) each block belongs to. */
+  .ssc-input.cat-technical{ background:var(--bar-technical-wash); border-color:rgba(74,134,200,0.35); }
+  .ssc-input.cat-tactical{ background:var(--bar-tactical-wash); border-color:rgba(209,72,63,0.35); }
+  .ssc-input.cat-psycho-social{ background:var(--bar-psychosocial-wash); border-color:rgba(79,158,92,0.35); }
+  .progress-cols{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:12px; }
+  @media (max-width:640px){ .progress-cols{ grid-template-columns:1fr; } }
+  .progress-cols .pc-label{ font-size:0.72rem; font-weight:600; color:var(--ink-muted); margin-bottom:4px; display:block; font-family:var(--font-mono); }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    border-radius:9px; padding:11px 20px; font-weight:700; font-size:0.9rem; border:1px solid transparent;
+  }
+  .btn-primary{ background:var(--pitch); color:var(--on-pitch); }
+  .btn-primary:hover{ background:var(--pitch-deep); color:var(--on-pitch); }
+  .btn-ghost{ background:transparent; border-color:var(--border-strong); color:var(--ink-soft); }
+  .btn-ghost:hover{ background:var(--paper-sunken); }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .submit-bar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:6px; }
+  .submit-note{ font-size:0.78rem; color:var(--ink-muted); }
+
+  .banner{ border-radius:11px; padding:14px 16px; font-size:0.86rem; margin-bottom:18px; line-height:1.5; }
+  .banner.info{ background:var(--pitch-wash); color:var(--pitch-deep); }
+  .banner.warn{ background:var(--warn-wash); color:var(--warn); }
+  .banner.danger{ background:var(--danger-wash); color:var(--danger); }
+  .banner .banner-actions{ margin-top:10px; display:flex; gap:10px; }
+  .banner button{ font-size:0.78rem; padding:6px 12px; }
+
+  .thankyou{ text-align:center; padding:48px 20px; }
+  .thankyou .big-check{ font-family:var(--font-display); font-size:3rem; color:var(--pitch); }
+  .thankyou h2{ font-size:1.6rem; margin-top:6px; }
+  .thankyou p{ color:var(--ink-muted); margin-top:8px; max-width:440px; margin-left:auto; margin-right:auto; }
+  .thankyou .btn{ margin-top:20px; }
+
+  .footer-note{ text-align:center; font-size:0.74rem; color:var(--ink-muted); margin-top:30px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Player IDP</h1>
+        <span class="sub">Individual Development Plan</span>
+      </div>
+    </div>
+    <div class="progress-strip" id="progressStrip">
+      <span id="progressLabel" class="mono">0 / 46 rated</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <span class="avg-chip" id="avgChip">Avg —</span>
+    </div>
+  </div>
+
+  <!-- ================= FORM VIEW ================= -->
+  <div class="view active" id="viewForm">
+
+    <div id="bannerSlot"></div>
+
+    <div id="formWrap">
+
+      <section class="card">
+        <div class="card-header bar-grey"><h2>Player details</h2></div>
+        <div class="grid-4">
+          <div class="field-row"><span class="field-label">Player</span><input type="text" id="f_player" placeholder="Full name"></div>
+          <div class="field-row"><span class="field-label">Date</span><input type="date" id="f_date"></div>
+          <div class="field-row"><span class="field-label">Age group</span><input type="text" id="f_ageGroup" placeholder="e.g. U14"></div>
+          <div class="field-row"><span class="field-label">Team</span><input type="text" id="f_team" placeholder="Team name"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header bar-gold"><h2>The season ahead</h2></div>
+        <div class="field-row">
+          <span class="field-label">What is something you would like to achieve next season?</span>
+          <p class="card-intro" style="margin-top:0;">This could be scoring a goal in a particular way, using your weak foot more, or something more specific.</p>
+          <textarea id="f_goalNextSeason" rows="3"></textarea>
+        </div>
+        <div class="field-row">
+          <span class="field-label">How could you achieve this goal next season?</span>
+          <p class="card-intro" style="margin-top:0;">What could you do to help you reach your goal?</p>
+          <textarea id="f_howAchieve" rows="3"></textarea>
+        </div>
+        <div class="field-row">
+          <span class="field-label">What positions would you like to play more?</span>
+          <p class="card-intro" style="margin-top:0;">Select all that apply.</p>
+          <div class="position-grid" id="positionGrid"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header bar-grey"><h2>Grading scale</h2></div>
+        <p class="card-intro">Grade yourself in respect to your peers — teammates and opponents — from this season. Use this scale for every rating below.</p>
+        <div class="legend">
+          <div class="legend-cell b1"><div class="lg-title">Needs significant improvement</div>Can rapidly improve within 1 month to move up a grade<div class="lg-range">1–2</div></div>
+          <div class="legend-cell b2"><div class="lg-title">Needs improvement</div>Requires 1–3 months of focused practice to move up a grade<div class="lg-range">3–4</div></div>
+          <div class="legend-cell b3"><div class="lg-title">Average</div>Requires 3–6 months of focused practice to move up a grade<div class="lg-range">5–6</div></div>
+          <div class="legend-cell b4"><div class="lg-title">Needs little improvement</div>Requires 6–12 months of focused practice to move up a grade<div class="lg-range">7–8</div></div>
+          <div class="legend-cell b5"><div class="lg-title">Above level</div>Exceeds all teammates and opponents at current level of play<div class="lg-range">9–10</div></div>
+        </div>
+      </section>
+
+      <section class="card cat-card" id="cat_technical"></section>
+      <section class="card cat-card" id="cat_tactical"></section>
+      <section class="card cat-card" id="cat_physical"></section>
+      <section class="card cat-card" id="cat_psychoSocial"></section>
+
+      <section class="card">
+        <div class="card-header bar-green"><h2>Areas of strength</h2></div>
+        <p class="card-intro">Pick your three biggest strengths from the self-evaluation above, and name something specific about each.</p>
+        <p class="si-example">Example — Technical: <b>1v1 attack</b> — "Creating space to play a pass or shot."</p>
+        <div id="strengthRows"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header bar-red"><h2>Areas for improvement</h2></div>
+        <p class="card-intro">Pick your three biggest areas for improvement from the self-evaluation above, and name something specific about each.</p>
+        <p class="si-example">Example — Technical: <b>First touch</b> — "I want to improve my ability to receive the ball out of the air."</p>
+        <div id="improvementRows"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header bar-grey"><h2>SMART goals</h2></div>
+        <p class="card-intro">Let's turn those areas for improvement into a plan. For each goal: what you'll stop, start and continue doing, and how you'll know you're making progress.</p>
+        <div class="smart-hint">
+          <div><b>Specific</b>How you will work towards your goal</div>
+          <div><b>Measurable</b>What does success look like along the way?</div>
+          <div><b>Attainable</b>Do you have time? Is it reachable?</div>
+          <div><b>Relevant</b>Does it match what happens in a game?</div>
+          <div><b>Timely</b>What's your deadline?</div>
+        </div>
+        <details class="example-box">
+          <summary>See a worked example (Technical — First touch)</summary>
+          <div class="ex-line"><b>Outcome goal:</b> I want to improve my ability to receive the ball out of the air.</div>
+          <div class="ex-line"><b>Stop:</b> Letting the ball bounce when coming towards me.</div>
+          <div class="ex-line"><b>Start:</b> Getting to the ball first before any bounce.</div>
+          <div class="ex-line"><b>Continue:</b> Practising with different parts of the feet and body — standing still and on the move, from different directions and heights.</div>
+          <div class="ex-line"><b>Weeks 1–4:</b> I do not let the ball bounce once in my games now.</div>
+          <div class="ex-line"><b>Weeks 5–16:</b> I am controlling every ball out of the air and keeping it close to me when standing still.</div>
+          <div class="ex-line"><b>Weeks 17+:</b> I can now control the ball out of the air when on the move.</div>
+        </details>
+
+        <div id="goalBlocks"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header bar-gold"><h2>Ready to submit</h2></div>
+        <p class="card-intro">Submitting adds your plan to the shared responses list for your coach. You can also keep a copy for yourself.</p>
+        <div class="submit-bar">
+          <button class="btn btn-primary" id="submitBtn" type="button">Submit my IDP</button>
+          <button class="btn btn-ghost" id="downloadDraftBtn" type="button">Download a copy</button>
+        </div>
+        <p class="submit-note" id="submitStatusNote"></p>
+      </section>
+
+    </div>
+
+    <div id="thankyouWrap" style="display:none;"></div>
+
+  </div>
+
+  <p class="footer-note">Player IDP · submitting sends your answers privately to your coach — nobody else can see them — and you can download your own copy too.</p>
+</div>
+
+<script>
+"use strict";
+(function(){
+
+  // ================= private submission delivery =================
+  // Paste in the "Web app URL" you get from deploying the companion
+  // player_idp_receiver.gs script (Deploy > New deployment > Web app),
+  // and the same secret word you set as SHARED_SECRET in that script.
+  // Until you do, submitting here just shows the download-your-copy
+  // screen — nothing is sent anywhere.
+  var SUBMIT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+  var SUBMIT_SECRET = "PASTE_YOUR_SHARED_SECRET_HERE";
+
+  // ---------- field definitions ----------
+  var TECHNICAL = [
+    {k:"first_touch", l:"First touch", d:"I can control the ball at different heights and speeds every time"},
+    {k:"short_passing", l:"Short passing", d:"I can complete passes to nearby teammates every time"},
+    {k:"long_passing", l:"Long passing", d:"I can complete passes to teammates far away every time"},
+    {k:"finishing", l:"Finishing", d:"I can score with most of my shots"},
+    {k:"shielding", l:"Shielding", d:"I can always protect the ball from being stolen"},
+    {k:"ball_striking", l:"Ball striking", d:"I can kick the ball accurately and powerfully with different parts of my feet"},
+    {k:"weak_foot", l:"Weak foot", d:"I can use my weak foot like my strong foot"},
+    {k:"tackling", l:"Tackling", d:"I win every tackle I make"},
+    {k:"1v1_attack", l:"1v1 attack", d:"I always beat the defender 1v1"},
+    {k:"1v1_defense", l:"1v1 defense", d:"I never get dribbled past by an attacker"},
+    {k:"heading", l:"Heading (if applicable)", d:"I can head the ball with accuracy and power every time"}
+  ];
+  var TACTICAL = [
+    {k:"scanning", l:"Scanning", d:"I am aware of the whole field at all times"},
+    {k:"vision", l:"Vision", d:"I can see what needs to happen before anyone else"},
+    {k:"timing", l:"Timing", d:"I know when things need to happen every time"},
+    {k:"positioning", l:"Positioning", d:"I am always in the right place to defend the goal"},
+    {k:"pressing", l:"Pressing", d:"I know when and how to pressure the ball every time"},
+    {k:"interceptions", l:"Interceptions", d:"I can predict what is about to happen in the game"},
+    {k:"off_ball", l:"Off-the-ball movement", d:"I always make runs that benefit the team"},
+    {k:"creativity", l:"Creativity", d:"I can make the pass/dribble/shot in a variety of different ways"},
+    {k:"disguise", l:"Disguise", d:"I can always hide what I am about to do"},
+    {k:"technical_application", l:"Technical application", d:"I know what technique will be most effective in each moment"}
+  ];
+  var PHYSICAL = [
+    {k:"speed", l:"Speed", d:"How fast I am without the ball"},
+    {k:"soccer_speed", l:"Soccer speed", d:"How fast I am with the ball"},
+    {k:"agility", l:"Agility", d:"How quickly I can change direction"},
+    {k:"strength", l:"Strength", d:"How strong I am"},
+    {k:"endurance", l:"Endurance", d:"How long I can play for"},
+    {k:"power", l:"Power", d:"How explosive I can be"},
+    {k:"balance", l:"Balance", d:"How steady I am on my feet throughout the game"},
+    {k:"coordination", l:"Coordination", d:"How easy it is for me to use different parts of my body"},
+    {k:"attacking_work_rate", l:"Attacking work rate", d:"I give my all when the team is attacking"},
+    {k:"defending_work_rate", l:"Defending work rate", d:"I give my all when the team is defending"}
+  ];
+  var PSYCHO_SOCIAL = [
+    {k:"aggression", l:"Aggression", d:"I am aggressive with everything I do in soccer"},
+    {k:"bravery", l:"Bravery", d:"I am never afraid to take chances"},
+    {k:"commitment", l:"Commitment", d:"I apply my all to every action/decision"},
+    {k:"concentration", l:"Concentration", d:"I am always focused on the game"},
+    {k:"confidence", l:"Confidence", d:"I always make positive decisions whatever the score"},
+    {k:"control", l:"Control", d:"I am always disciplined with my decisions"},
+    {k:"composure", l:"Composure", d:"I never let pressure affect my decision or ability to carry it out"},
+    {k:"determination", l:"Determination", d:"I never give up even when things aren't going how I expected"},
+    {k:"humility", l:"Humility", d:"I understand I can always improve"},
+    {k:"anxiety", l:"Anxiety", d:"I never let stress affect me negatively"},
+    {k:"leadership", l:"Leadership", d:"I always do what is best for the team"},
+    {k:"supporting", l:"Supporting", d:"I always believe in my teammates, whatever happens"},
+    {k:"respect", l:"Respect", d:"I always pay attention when others are talking to me"},
+    {k:"coachability", l:"Coachability", d:"I always want to learn and improve"},
+    {k:"communication", l:"Communication", d:"I always instruct or advise teammates with good information"}
+  ];
+  var CATEGORIES = [
+    {key:"technical", title:"Technical", bar:"technical", question:"Where can you improve your technical side of the game?", items:TECHNICAL},
+    {key:"tactical", title:"Tactical", bar:"tactical", question:"Where can you improve your tactical side of the game?", items:TACTICAL},
+    {key:"physical", title:"Physical", bar:"physical", question:"Where can you improve your physical side of the game?", items:PHYSICAL},
+    {key:"psychoSocial", title:"Psycho-Social", bar:"psychosocial", question:"Where can you improve your psychological and social side of the game?", items:PSYCHO_SOCIAL}
+  ];
+  var TOTAL_RATING_ITEMS = CATEGORIES.reduce(function(s,c){ return s + c.items.length; }, 0);
+
+  var POSITIONS = ["Full back","Center back","Centre midfield","Wide midfield","Striker"];
+
+  var SI_ROWS = [
+    {key:"technical", label:"Technical"},
+    {key:"tactical", label:"Tactical"},
+    {key:"psychoSocial", label:"Psycho-Social"}
+  ];
+
+  var GOAL_BLOCKS = [
+    {key:"technical", title:"Technical goal"},
+    {key:"tactical", title:"Tactical goal"},
+    {key:"psychoSocial", title:"Psycho-social goal"},
+    {key:"nonSoccer", title:"Non-soccer goal", intro:"Not soccer related, but will still improve performance — e.g. sleeping habits, recovery, balancing school work."}
+  ];
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function bandFor(score){
+    if(score == null || score === "") return null;
+    var n = Number(score);
+    if(n <= 2) return 1;
+    if(n <= 4) return 2;
+    if(n <= 6) return 3;
+    if(n <= 8) return 4;
+    return 5;
+  }
+
+  // ---------- state ----------
+  var downloadsApi = null;
+
+  // ================= render: rating category cards =================
+  function ratingRowHTML(catKey, item){
+    var wrapId = "score_" + catKey + "_" + item.k;
+    var noteId = "note_" + catKey + "_" + item.k;
+    var btns = [];
+    for(var i=1;i<=10;i++) btns.push('<button type="button" class="score-btn" data-value="' + i + '">' + i + '</button>');
+    return (
+      '<div class="rating-row">' +
+        '<div><div class="rating-label">' + esc(item.l) + '</div><div class="rating-desc">' + esc(item.d) + '</div></div>' +
+        '<div class="rating-controls">' +
+          '<div class="score-scale" id="' + wrapId + '" data-cat="' + catKey + '" data-key="' + item.k + '" data-value="" role="group" aria-label="Score, 1 to 10">' + btns.join("") + '</div>' +
+          '<input type="text" class="note-input" id="' + noteId + '" placeholder="Notes (optional)">' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderCategoryCard(cat){
+    var el = document.getElementById("cat_" + cat.key);
+    if(!el) return;
+    el.innerHTML =
+      '<div class="card-header bar-' + cat.bar + '"><h2>' + esc(cat.title) + '</h2>' +
+        '<span class="cat-count mono" id="count_' + cat.key + '">0 / ' + cat.items.length + '</span>' +
+        '<span class="cat-avg mono" id="avg_' + cat.key + '">Avg —</span></div>' +
+      '<p class="card-intro">' + esc(cat.question) + '</p>' +
+      cat.items.map(function(item){ return ratingRowHTML(cat.key, item); }).join("");
+  }
+
+  function renderPositions(){
+    var el = document.getElementById("positionGrid");
+    el.innerHTML = POSITIONS.map(function(p, i){
+      var id = "pos_" + i;
+      return '<label class="position-chip" id="chip_' + id + '"><input type="checkbox" id="' + id + '" data-pos="' + esc(p) + '">' + esc(p) + '</label>';
+    }).join("");
+    POSITIONS.forEach(function(p, i){
+      var cb = document.getElementById("pos_" + i);
+      var chip = document.getElementById("chip_pos_" + i);
+      cb.addEventListener("change", function(){ chip.classList.toggle("checked", cb.checked); });
+    });
+  }
+
+  // Only the sub-domains that belong to a given strength/improvement row's
+  // own category — e.g. the "Tactical" row can only pick from Scanning,
+  // Vision, Timing, etc., never a Technical or Physical item. Once ratings
+  // exist for that category, the choices narrow further to whichever
+  // sub-domain(s) are tied for the highest score (a strength) or the
+  // lowest score (an improvement) — auto-picked when there's one clear
+  // winner, or left as a short list for the player to break the tie when
+  // several sub-domains share that most-polarized score.
+  function computeCategoryStats(catKey){
+    var cat = CATEGORIES.filter(function(c){ return c.key === catKey; })[0];
+    var rated = [];
+    if(cat){
+      cat.items.forEach(function(item){
+        var wrap = document.getElementById("score_" + catKey + "_" + item.k);
+        if(wrap && wrap.dataset.value !== ""){
+          rated.push({ label: item.l, score: Number(wrap.dataset.value) });
+        }
+      });
+    }
+    if(!rated.length) return { rated: rated, best: [], worst: [] };
+    var maxScore = Math.max.apply(null, rated.map(function(r){ return r.score; }));
+    var minScore = Math.min.apply(null, rated.map(function(r){ return r.score; }));
+    return {
+      rated: rated,
+      best: rated.filter(function(r){ return r.score === maxScore; }).map(function(r){ return r.label; }),
+      worst: rated.filter(function(r){ return r.score === minScore; }).map(function(r){ return r.label; })
+    };
+  }
+
+  function areaChoicesFor(rowKey, mode){
+    var cat = CATEGORIES.filter(function(c){ return c.key === rowKey; })[0];
+    var allItems = cat ? cat.items.map(function(it){ return it.l; }) : [];
+    var stats = computeCategoryStats(rowKey);
+    if(!stats.rated.length){
+      return { options: allItems, auto: null, tied: false, rated: false };
+    }
+    var winners = mode === "strength" ? stats.best : stats.worst;
+    return { options: winners, auto: winners.length === 1 ? winners[0] : null, tied: winners.length > 1, rated: true };
+  }
+
+  var SI_MODES = [
+    { prefix: "strength", mode: "strength", verb: "highest" },
+    { prefix: "improve", mode: "improve", verb: "lowest" }
+  ];
+
+  function renderStrengthImprovementRows(){
+    ["strengthRows","improvementRows"].forEach(function(containerId, idx){
+      var prefix = SI_MODES[idx].prefix;
+      var el = document.getElementById(containerId);
+      el.innerHTML = SI_ROWS.map(function(row){
+        return (
+          '<div class="si-row">' +
+            '<div class="si-tag">' + esc(row.label.toUpperCase()) + '</div>' +
+            '<select id="' + prefix + '_' + row.key + '_area"></select>' +
+            '<input type="text" id="' + prefix + '_' + row.key + '_detail" placeholder="Something specific about it">' +
+            '<div class="si-hint" id="' + prefix + '_' + row.key + '_hint"></div>' +
+          '</div>'
+        );
+      }).join("");
+    });
+    updateStrengthImprovementOptions();
+  }
+
+  function updateStrengthImprovementOptions(){
+    SI_MODES.forEach(function(cfg){
+      SI_ROWS.forEach(function(row){
+        var sel = document.getElementById(cfg.prefix + "_" + row.key + "_area");
+        var hint = document.getElementById(cfg.prefix + "_" + row.key + "_hint");
+        if(!sel) return;
+        var prevValue = sel.value;
+        var choice = areaChoicesFor(row.key, cfg.mode);
+        var optsHTML = '<option value="">Select an area…</option>' +
+          choice.options.map(function(l){ return '<option value="' + esc(l) + '">' + esc(l) + '</option>'; }).join("");
+        sel.innerHTML = optsHTML;
+        if(choice.auto){
+          sel.value = choice.auto;
+        } else if(choice.options.indexOf(prevValue) !== -1){
+          sel.value = prevValue;
+        } else {
+          sel.value = "";
+        }
+        sel.classList.toggle("auto-filled", !!choice.auto);
+        sel.classList.toggle("needs-tiebreak", choice.tied);
+        if(!hint) return;
+        if(!choice.rated){
+          hint.textContent = "Not rated yet — choose any " + row.label + " sub-domain.";
+        } else if(choice.auto){
+          hint.textContent = "Auto-picked: your " + cfg.verb + "-graded " + row.label + " sub-domain.";
+        } else {
+          hint.textContent = choice.options.length + " sub-domains are tied for " + cfg.verb + " in " + row.label + " — pick one.";
+        }
+      });
+    });
+  }
+
+  // Maps a goal block's key to its matching category color class, so the
+  // Stop/Start/Continue boxes for e.g. the Technical goal pick up the same
+  // blue used for the Technical rating card. The Non-soccer goal has no
+  // category of its own, so it gets no tint (plain neutral boxes).
+  var GOAL_CATEGORY_CLASS = { technical:"cat-technical", tactical:"cat-tactical", psychoSocial:"cat-psycho-social" };
+
+  function goalFieldsHTML(key){
+    var tintClass = GOAL_CATEGORY_CLASS[key] ? (" " + GOAL_CATEGORY_CLASS[key]) : "";
+    return (
+      '<div class="field-row"><span class="field-label">Outcome goal</span><textarea id="goal_' + key + '_outcome" rows="2"></textarea></div>' +
+      '<div class="sscarow"><div class="ssc-tag stop">Stop</div><textarea class="ssc-input' + tintClass + '" id="goal_' + key + '_stop" rows="2"></textarea></div>' +
+      '<div class="sscarow"><div class="ssc-tag start">Start</div><textarea class="ssc-input' + tintClass + '" id="goal_' + key + '_start" rows="2"></textarea></div>' +
+      '<div class="sscarow"><div class="ssc-tag cont">Continue</div><textarea class="ssc-input' + tintClass + '" id="goal_' + key + '_continue" rows="2"></textarea></div>' +
+      '<div class="progress-cols">' +
+        '<div><span class="pc-label">Weeks 1–4</span><textarea id="goal_' + key + '_w1_4" rows="2"></textarea></div>' +
+        '<div><span class="pc-label">Weeks 5–16</span><textarea id="goal_' + key + '_w5_16" rows="2"></textarea></div>' +
+        '<div><span class="pc-label">Weeks 17+</span><textarea id="goal_' + key + '_w17plus" rows="2"></textarea></div>' +
+      '</div>'
+    );
+  }
+
+  function renderGoalBlocks(){
+    var el = document.getElementById("goalBlocks");
+    el.innerHTML = GOAL_BLOCKS.map(function(g){
+      return (
+        '<div class="goal-block">' +
+          '<h3>' + esc(g.title) + '</h3>' +
+          (g.intro ? '<p class="card-intro" style="margin-bottom:10px;">' + esc(g.intro) + '</p>' : '') +
+          goalFieldsHTML(g.key) +
+        '</div>'
+      );
+    }).join("");
+  }
+
+  // ================= scoring / progress =================
+  // Repaints a score-scale's ten buttons to reflect its current
+  // data-value: the matching button gets "selected" plus its grade-band
+  // color, every other button is reset to neutral.
+  function updateBandStyle(wrap){
+    var val = wrap.dataset.value;
+    var band = bandFor(val);
+    var btns = wrap.querySelectorAll(".score-btn");
+    for(var i=0;i<btns.length;i++){
+      var btn = btns[i];
+      var isSelected = val !== "" && btn.dataset.value === val;
+      for(var b=1;b<=5;b++) btn.classList.remove("band-" + b);
+      btn.classList.toggle("selected", isSelected);
+      if(isSelected && band) btn.classList.add("band-" + band);
+    }
+  }
+
+  function setScoreValue(wrap, val){
+    wrap.dataset.value = val;
+    updateBandStyle(wrap);
+  }
+
+  function recomputeProgress(){
+    var total = 0, rated = 0, sum = 0;
+    CATEGORIES.forEach(function(cat){
+      var catRated = 0, catSum = 0;
+      cat.items.forEach(function(item){
+        total++;
+        var sel = document.getElementById("score_" + cat.key + "_" + item.k);
+        if(sel && sel.dataset.value !== ""){
+          rated++; catRated++; sum += Number(sel.dataset.value);
+          catSum += Number(sel.dataset.value);
+        }
+      });
+      var countEl = document.getElementById("count_" + cat.key);
+      if(countEl) countEl.textContent = catRated + " / " + cat.items.length;
+      var avgEl = document.getElementById("avg_" + cat.key);
+      if(avgEl) avgEl.textContent = catRated ? "Avg " + (catSum/catRated).toFixed(1) : "Avg —";
+    });
+    document.getElementById("progressLabel").textContent = rated + " / " + total + " rated";
+    document.getElementById("progressFill").style.width = (total ? Math.round(rated/total*100) : 0) + "%";
+    var avgChip = document.getElementById("avgChip");
+    avgChip.textContent = rated ? "Avg " + (sum/rated).toFixed(1) : "Avg —";
+  }
+
+  // ================= collect / restore form data =================
+  function collectFormData(){
+    var data = {
+      player: document.getElementById("f_player").value.trim(),
+      date: document.getElementById("f_date").value,
+      ageGroup: document.getElementById("f_ageGroup").value.trim(),
+      team: document.getElementById("f_team").value.trim(),
+      goalNextSeason: document.getElementById("f_goalNextSeason").value.trim(),
+      howAchieve: document.getElementById("f_howAchieve").value.trim(),
+      positions: POSITIONS.filter(function(p, i){ return document.getElementById("pos_" + i).checked; }),
+      ratings: {},
+      strengths: {},
+      improvements: {},
+      goals: {}
+    };
+    var sum = 0, rated = 0;
+    CATEGORIES.forEach(function(cat){
+      data.ratings[cat.key] = cat.items.map(function(item){
+        var score = document.getElementById("score_" + cat.key + "_" + item.k).dataset.value;
+        var note = document.getElementById("note_" + cat.key + "_" + item.k).value.trim();
+        if(score !== ""){ rated++; sum += Number(score); }
+        return { key:item.k, label:item.l, score: score === "" ? null : Number(score), note: note };
+      });
+    });
+    data.avgScore = rated ? Math.round((sum/rated)*10)/10 : null;
+    data.ratedCount = rated;
+
+    SI_ROWS.forEach(function(row){
+      data.strengths[row.key] = {
+        area: document.getElementById("strength_" + row.key + "_area").value.trim(),
+        detail: document.getElementById("strength_" + row.key + "_detail").value.trim()
+      };
+      data.improvements[row.key] = {
+        area: document.getElementById("improve_" + row.key + "_area").value.trim(),
+        detail: document.getElementById("improve_" + row.key + "_detail").value.trim()
+      };
+    });
+
+    GOAL_BLOCKS.forEach(function(g){
+      data.goals[g.key] = {
+        outcome: document.getElementById("goal_" + g.key + "_outcome").value.trim(),
+        stop: document.getElementById("goal_" + g.key + "_stop").value.trim(),
+        start: document.getElementById("goal_" + g.key + "_start").value.trim(),
+        cont: document.getElementById("goal_" + g.key + "_continue").value.trim(),
+        w1_4: document.getElementById("goal_" + g.key + "_w1_4").value.trim(),
+        w5_16: document.getElementById("goal_" + g.key + "_w5_16").value.trim(),
+        w17plus: document.getElementById("goal_" + g.key + "_w17plus").value.trim()
+      };
+    });
+
+    return data;
+  }
+
+  function fillFormFrom(data){
+    if(!data) return;
+    if(document.getElementById("f_player")) document.getElementById("f_player").value = data.player || "";
+    if(document.getElementById("f_date")) document.getElementById("f_date").value = data.date || "";
+    if(document.getElementById("f_ageGroup")) document.getElementById("f_ageGroup").value = data.ageGroup || "";
+    if(document.getElementById("f_team")) document.getElementById("f_team").value = data.team || "";
+    if(document.getElementById("f_goalNextSeason")) document.getElementById("f_goalNextSeason").value = data.goalNextSeason || "";
+    if(document.getElementById("f_howAchieve")) document.getElementById("f_howAchieve").value = data.howAchieve || "";
+    (data.positions || []).forEach(function(p){
+      var i = POSITIONS.indexOf(p);
+      if(i >= 0){
+        var cb = document.getElementById("pos_" + i);
+        if(cb){ cb.checked = true; document.getElementById("chip_pos_" + i).classList.add("checked"); }
+      }
+    });
+    CATEGORIES.forEach(function(cat){
+      var list = (data.ratings && data.ratings[cat.key]) || [];
+      list.forEach(function(entry){
+        var sel = document.getElementById("score_" + cat.key + "_" + entry.key);
+        var note = document.getElementById("note_" + cat.key + "_" + entry.key);
+        if(sel && entry.score != null){ setScoreValue(sel, String(entry.score)); }
+        if(note && entry.note) note.value = entry.note;
+      });
+    });
+    SI_ROWS.forEach(function(row){
+      var s = (data.strengths || {})[row.key], im = (data.improvements || {})[row.key];
+      if(s){
+        if(document.getElementById("strength_" + row.key + "_area")) document.getElementById("strength_" + row.key + "_area").value = s.area || "";
+        if(document.getElementById("strength_" + row.key + "_detail")) document.getElementById("strength_" + row.key + "_detail").value = s.detail || "";
+      }
+      if(im){
+        if(document.getElementById("improve_" + row.key + "_area")) document.getElementById("improve_" + row.key + "_area").value = im.area || "";
+        if(document.getElementById("improve_" + row.key + "_detail")) document.getElementById("improve_" + row.key + "_detail").value = im.detail || "";
+      }
+    });
+    GOAL_BLOCKS.forEach(function(g){
+      var gd = (data.goals || {})[g.key];
+      if(!gd) return;
+      ["outcome","stop","start","cont","w1_4","w5_16","w17plus"].forEach(function(f){
+        var elId = "goal_" + g.key + "_" + (f === "cont" ? "continue" : f);
+        var elx = document.getElementById(elId);
+        if(elx && gd[f]) elx.value = gd[f];
+      });
+    });
+    recomputeProgress();
+  }
+
+  function validate(data){
+    var errs = [];
+    if(!data.player) errs.push("Please enter the player's name.");
+    return errs;
+  }
+
+  // ================= markdown export (per-submission) =================
+  function toMarkdown(d){
+    var lines = [];
+    lines.push("# Player IDP — " + (d.player || "Unnamed player"));
+    lines.push("");
+    lines.push("Date: " + (d.date || "—") + "  ");
+    lines.push("Age group: " + (d.ageGroup || "—") + "  ");
+    lines.push("Team: " + (d.team || "—") + "  ");
+    lines.push("Average score: " + (d.avgScore != null ? d.avgScore : "—") + " (" + (d.ratedCount||0) + "/" + TOTAL_RATING_ITEMS + " rated)");
+    lines.push("");
+    lines.push("## Season reflection");
+    lines.push("**Goal for next season:** " + (d.goalNextSeason || "—"));
+    lines.push("");
+    lines.push("**How to achieve it:** " + (d.howAchieve || "—"));
+    lines.push("");
+    lines.push("**Positions to play more:** " + ((d.positions||[]).join(", ") || "—"));
+    lines.push("");
+    CATEGORIES.forEach(function(cat){
+      lines.push("## " + cat.title);
+      (d.ratings && d.ratings[cat.key] || []).forEach(function(item){
+        lines.push("- **" + item.label + "**: " + (item.score != null ? item.score + "/10" : "not rated") + (item.note ? " — " + item.note : ""));
+      });
+      lines.push("");
+    });
+    lines.push("## Areas of strength");
+    SI_ROWS.forEach(function(row){
+      var s = (d.strengths||{})[row.key] || {};
+      lines.push("- **" + row.label + "**: " + (s.area || "—") + (s.detail ? " — " + s.detail : ""));
+    });
+    lines.push("");
+    lines.push("## Areas for improvement");
+    SI_ROWS.forEach(function(row){
+      var im = (d.improvements||{})[row.key] || {};
+      lines.push("- **" + row.label + "**: " + (im.area || "—") + (im.detail ? " — " + im.detail : ""));
+    });
+    lines.push("");
+    lines.push("## SMART goals");
+    GOAL_BLOCKS.forEach(function(g){
+      var gd = (d.goals||{})[g.key] || {};
+      lines.push("### " + g.title);
+      lines.push("Outcome goal: " + (gd.outcome || "—"));
+      lines.push("- Stop: " + (gd.stop || "—"));
+      lines.push("- Start: " + (gd.start || "—"));
+      lines.push("- Continue: " + (gd.cont || "—"));
+      lines.push("- Progress weeks 1–4: " + (gd.w1_4 || "—"));
+      lines.push("- Progress weeks 5–16: " + (gd.w5_16 || "—"));
+      lines.push("- Progress weeks 17+: " + (gd.w17plus || "—"));
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  // ================= PDF export (per-submission) =================
+  // A hand-rolled, dependency-free PDF writer: no external library is
+  // loaded (this page has to keep working with no network access and no
+  // external scripts, whether it's published as a Claude artifact or
+  // hosted plainly), so this builds the PDF file bytes directly. Text is
+  // set in Helvetica / Helvetica-Bold -- two of the PDF spec's 14 "base"
+  // fonts that every PDF viewer already has built in, so nothing needs to
+  // be embedded in the file. Helvetica is a clean modern sans-serif, much
+  // closer in spirit to the page's Montserrat than a typewriter-style
+  // monospace font would be. Embedding the exact Montserrat font file
+  // itself isn't possible here (that needs the actual font binary, which
+  // this environment has no network access to fetch), but Helvetica gets
+  // the same clean, modern, sans-serif feel without needing any embedded
+  // font data at all.
+  //
+  // Because Helvetica is proportionally spaced (unlike a monospace font),
+  // line-wrapping and table columns are laid out by actual measured text
+  // width in points, using Helvetica's standard published character widths
+  // (Adobe's public font metrics for the 14 base fonts -- the same numbers
+  // every PDF library uses), rather than by counting characters.
+  //
+  // The document is built as two SECTIONS: (1) the intro (title/player
+  // details/season ahead) immediately followed, on the same page(s), by
+  // the rating tables laid out in two side-by-side half-width columns
+  // (Technical+Tactical on the left, Physical+Psycho-Social on the right)
+  // so all four categories plus the intro fit together; and (2) the
+  // strengths/improvements/goals summary, which starts fresh on its own
+  // page after that.
+  var PDF_PAGE_W = 595, PDF_PAGE_H = 842; // A4, in points
+  var PDF_MARGIN_L = 50, PDF_MARGIN_R = 50, PDF_MARGIN_TOP = 56, PDF_MARGIN_BOTTOM = 50;
+  var PDF_BODY_SIZE = 9.5, PDF_HEAD_SIZE = 11, PDF_TITLE_SIZE = 15;
+  var PDF_LEADING_FACTOR = 1.4;
+  var PDF_INK_DEFAULT = "#211d17"; // matches the page's --ink CSS variable
+  var PDF_CONTENT_W = PDF_PAGE_W - PDF_MARGIN_L - PDF_MARGIN_R;
+  var PDF_COL_GUTTER = 16;
+  var PDF_COL_W = (PDF_CONTENT_W - PDF_COL_GUTTER) / 2;
+  var PDF_NOTE_MAX_CHARS = 50; // ratings notes are truncated to this length
+
+  // Standard Helvetica / Helvetica-Bold metrics (Adobe's public AFM font
+  // metrics, WinAnsiEncoding character codes 32-255, widths in 1/1000 em).
+  var PDF_HELV_WIDTHS = {
+    32:278,33:278,34:355,35:556,36:556,37:889,38:667,39:191,40:333,41:333,42:389,43:584,44:278,45:333,46:278,
+    47:278,48:556,49:556,50:556,51:556,52:556,53:556,54:556,55:556,56:556,57:556,58:278,59:278,60:584,61:584,
+    62:584,63:556,64:1015,65:667,66:667,67:722,68:722,69:667,70:611,71:778,72:722,73:278,74:500,75:667,76:556,
+    77:833,78:722,79:778,80:667,81:778,82:722,83:667,84:611,85:722,86:667,87:944,88:667,89:667,90:611,91:278,
+    92:278,93:278,94:469,95:556,96:333,97:556,98:556,99:500,100:556,101:556,102:278,103:556,104:556,105:222,
+    106:222,107:500,108:222,109:833,110:556,111:556,112:556,113:556,114:333,115:500,116:278,117:556,118:500,
+    119:722,120:500,121:500,122:500,123:334,124:260,125:334,126:584,127:350,128:556,129:350,130:222,131:556,
+    132:333,133:1000,134:556,135:556,136:333,137:1000,138:667,139:333,140:1000,141:350,142:611,143:350,144:350,
+    145:222,146:222,147:333,148:333,149:350,150:556,151:1000,152:333,153:1000,154:500,155:333,156:944,157:350,
+    158:500,159:667,160:278,161:333,162:556,163:556,164:556,165:556,166:260,167:556,168:333,169:737,170:370,
+    171:556,172:584,173:333,174:737,175:333,176:400,177:584,178:333,179:333,180:333,181:556,182:537,183:278,
+    184:333,185:333,186:365,187:556,188:834,189:834,190:834,191:611,192:667,193:667,194:667,195:667,196:667,
+    197:667,198:1000,199:722,200:667,201:667,202:667,203:667,204:278,205:278,206:278,207:278,208:722,209:722,
+    210:778,211:778,212:778,213:778,214:778,215:584,216:778,217:722,218:722,219:722,220:722,221:667,222:667,
+    223:611,224:556,225:556,226:556,227:556,228:556,229:556,230:889,231:500,232:556,233:556,234:556,235:556,
+    236:278,237:278,238:278,239:278,240:556,241:556,242:556,243:556,244:556,245:556,246:556,247:584,248:611,
+    249:556,250:556,251:556,252:556,253:500,254:556,255:500
+  };
+  var PDF_HELV_BOLD_WIDTHS = {
+    32:278,33:333,34:474,35:556,36:556,37:889,38:722,39:238,40:333,41:333,42:389,43:584,44:278,45:333,46:278,
+    47:278,48:556,49:556,50:556,51:556,52:556,53:556,54:556,55:556,56:556,57:556,58:333,59:333,60:584,61:584,
+    62:584,63:611,64:975,65:722,66:722,67:722,68:722,69:667,70:611,71:778,72:722,73:278,74:556,75:722,76:611,
+    77:833,78:722,79:778,80:667,81:778,82:722,83:667,84:611,85:722,86:667,87:944,88:667,89:667,90:611,91:333,
+    92:278,93:333,94:584,95:556,96:333,97:556,98:611,99:556,100:611,101:556,102:333,103:611,104:611,105:278,
+    106:278,107:556,108:278,109:889,110:611,111:611,112:611,113:611,114:389,115:556,116:333,117:611,118:556,
+    119:778,120:556,121:556,122:500,123:389,124:280,125:389,126:584,127:350,128:556,129:350,130:278,131:556,
+    132:500,133:1000,134:556,135:556,136:333,137:1000,138:667,139:333,140:1000,141:350,142:611,143:350,144:350,
+    145:278,146:278,147:500,148:500,149:350,150:556,151:1000,152:333,153:1000,154:556,155:333,156:944,157:350,
+    158:500,159:667,160:278,161:333,162:556,163:556,164:556,165:556,166:280,167:556,168:333,169:737,170:370,
+    171:556,172:584,173:333,174:737,175:333,176:400,177:584,178:333,179:333,180:333,181:611,182:556,183:278,
+    184:333,185:333,186:365,187:556,188:834,189:834,190:834,191:611,192:722,193:722,194:722,195:722,196:722,
+    197:722,198:1000,199:722,200:667,201:667,202:667,203:667,204:278,205:278,206:278,207:278,208:722,209:722,
+    210:778,211:778,212:778,213:778,214:778,215:584,216:778,217:722,218:722,219:722,220:722,221:667,222:667,
+    223:611,224:556,225:556,226:556,227:556,228:556,229:556,230:889,231:556,232:556,233:556,234:556,235:556,
+    236:278,237:278,238:278,239:278,240:611,241:611,242:611,243:611,244:611,245:611,246:611,247:584,248:611,
+    249:611,250:611,251:611,252:611,253:556,254:611,255:556
+  };
+
+  // Mirrors the site's category/section banner colors exactly (see the
+  // --bar-*-bg / --bar-*-ink CSS variables and the card-header colors near
+  // the top of this file) so the downloaded PDF reads as the same document
+  // as the on-screen form, just on paper.
+  var PDF_BAR_COLORS = {
+    technical:    { bg:"#4a86c8", ink:"#ffffff" },
+    tactical:     { bg:"#d1483f", ink:"#ffffff" },
+    physical:     { bg:"#e8b93f", ink:"#3a2c05" },
+    psychosocial: { bg:"#4f9e5c", ink:"#ffffff" },
+    grey:         { bg:"#9a9488", ink:"#211d17" },
+    gold:         { bg:"#e0a940", ink:"#241a05" },
+    green:        { bg:"#8fbf5a", ink:"#132608" },
+    red:          { bg:"#dd8f83", ink:"#2c0e08" }
+  };
+  // Mirrors the site's --band-1 .. --band-5 score colors (see bandFor()).
+  var PDF_BAND_COLORS = {
+    1: { bg:"#c8574a", ink:"#ffffff" },
+    2: { bg:"#d68e3c", ink:"#2a1c08" },
+    3: { bg:"#d3b93f", ink:"#2a2408" },
+    4: { bg:"#7fae52", ink:"#0e2408" },
+    5: { bg:"#3f8f55", ink:"#ffffff" }
+  };
+
+  // Column layout for the per-category rating tables, in points. A narrower
+  // layout context (see makePdfLayoutCtx) is used when a category table is
+  // laid out in a half-width page column instead of the full page width.
+  var PDF_TABLE_LABEL_W = 130;
+  var PDF_TABLE_SCORE_W = 55;
+  var PDF_TABLE_LABEL_W_NARROW = 108;
+  var PDF_TABLE_SCORE_W_NARROW = 45;
+  var PDF_ZEBRA_SHADE = "#f3f1ec"; // subtle alternating-row tint, same for every category
+  var PDF_RULE_WIDTH = 1.1; // points
+  var PDF_SSC_TINT_ALPHA = 0.14; // Stop/Start/Continue background tint strength
+
+  // A layout context bundles the measurements that change when content is
+  // laid out at full page width vs. in a half-width column: how wide to
+  // wrap text, and how the rating table's three columns divide up that
+  // width. Every layout function below takes one of these instead of
+  // reading page-wide constants directly, so the same block-building code
+  // works whether it's rendering full-width or side-by-side.
+  function makePdfLayoutCtx(contentW){
+    var narrow = contentW < PDF_CONTENT_W - 1;
+    var labelW = narrow ? PDF_TABLE_LABEL_W_NARROW : PDF_TABLE_LABEL_W;
+    var scoreW = narrow ? PDF_TABLE_SCORE_W_NARROW : PDF_TABLE_SCORE_W;
+    var notesStart = labelW + scoreW;
+    return { contentW: contentW, labelW: labelW, scoreW: scoreW, notesStart: notesStart, notesW: contentW - notesStart };
+  }
+  var PDF_FULL_CTX = makePdfLayoutCtx(PDF_CONTENT_W);
+  var PDF_COL_CTX = makePdfLayoutCtx(PDF_COL_W);
+
+  function hexToRgbFrac(hex){
+    hex = String(hex||"#000000").replace("#","");
+    var r = parseInt(hex.substring(0,2),16) / 255;
+    var g = parseInt(hex.substring(2,4),16) / 255;
+    var b = parseInt(hex.substring(4,6),16) / 255;
+    return [r,g,b];
+  }
+
+  // Builds a PDF color-setting operator ("rg" = nonstroking/fill, "RG" =
+  // stroking) from a CSS hex color, e.g. pdfColorOp("#4a86c8","rg").
+  function pdfColorOp(hex, op){
+    var c = hexToRgbFrac(hex);
+    return c[0].toFixed(3) + " " + c[1].toFixed(3) + " " + c[2].toFixed(3) + " " + op;
+  }
+
+  // Blends a color toward white to make a light background tint (used for
+  // the Stop/Start/Continue highlight, same idea as the site's *-wash
+  // colors) without needing PDF transparency/ExtGState support.
+  function pdfTint(hex, alpha){
+    var c = hexToRgbFrac(hex);
+    var mix = function(v){ return 1 - alpha * (1 - v); };
+    return "#" + [mix(c[0]), mix(c[1]), mix(c[2])].map(function(v){
+      var h = Math.round(v * 255).toString(16);
+      return h.length < 2 ? "0" + h : h;
+    }).join("");
+  }
+
+  function pdfCharWidthUnits(code, bold){
+    var table = bold ? PDF_HELV_BOLD_WIDTHS : PDF_HELV_WIDTHS;
+    return table[code] != null ? table[code] : 556;
+  }
+
+  // Measures a string's width in points at a given font ("F1" regular /
+  // "F2" bold) and size, using the standard metrics tables above.
+  function pdfTextWidth(text, font, size){
+    var bold = font === "F2";
+    var w = 0;
+    for(var i=0;i<text.length;i++){ w += pdfCharWidthUnits(text.charCodeAt(i), bold); }
+    return w * size / 1000;
+  }
+
+  // PDF's base fonts only cover the Latin-1-ish WinAnsiEncoding range, so
+  // smart quotes/dashes get normalized to plain ASCII first, and anything
+  // still outside that range (emoji, non-Latin scripts) becomes "?" rather
+  // than corrupting the file.
+  function toPdfText(s){
+    s = String(s == null ? "" : s)
+      .replace(/[‘’]/g, "'")
+      .replace(/[“”]/g, '"')
+      .replace(/[–—]/g, "-")
+      .replace(/…/g, "...")
+      .replace(/✓/g, "OK");
+    var out = "";
+    for(var i=0;i<s.length;i++){
+      var cp = s.charCodeAt(i);
+      if(cp === 9){ out += "    "; continue; }
+      if(cp === 10 || cp === 13){ out += "\n"; continue; }
+      if((cp >= 32 && cp <= 126) || (cp >= 160 && cp <= 255)){ out += s[i]; }
+      else { out += "?"; }
+    }
+    return out;
+  }
+
+  // Truncates a note to at most PDF_NOTE_MAX_CHARS characters, breaking at
+  // a word boundary where possible and marking the cut with "...".
+  function pdfTruncateNote(text, maxChars){
+    if(text.length <= maxChars) return text;
+    var cut = text.slice(0, maxChars);
+    var lastSpace = cut.lastIndexOf(" ");
+    if(lastSpace > maxChars * 0.5) cut = cut.slice(0, lastSpace);
+    return cut.replace(/[\s.,;:-]+$/, "") + "...";
+  }
+
+  function escapePdfString(s){
+    return s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  }
+
+  // Finds the longest prefix of `text` that fits within `maxWidth` points,
+  // via binary search over measured width (used for the rare safety
+  // truncation of a rating label, and for hard-breaking a single word
+  // that's wider than a whole wrapping column on its own).
+  function pdfFitWidth(text, font, size, maxWidth){
+    if(pdfTextWidth(text, font, size) <= maxWidth) return text.length;
+    var lo = 0, hi = text.length, fit = 0;
+    while(lo <= hi){
+      var mid = Math.floor((lo + hi) / 2);
+      if(pdfTextWidth(text.slice(0, mid), font, size) <= maxWidth){ fit = mid; lo = mid + 1; }
+      else { hi = mid - 1; }
+    }
+    return fit;
+  }
+
+  function pdfWrapParagraph(text, maxWidth, font, size){
+    if(text === "") return [""];
+    var words = text.split(/\s+/).filter(function(w){ return w.length; });
+    if(!words.length) return [""];
+    var lines = [], cur = "";
+    words.forEach(function(word){
+      var w = word;
+      while(pdfTextWidth(w, font, size) > maxWidth && w.length > 1){
+        if(cur){ lines.push(cur); cur = ""; }
+        var fit = Math.max(1, pdfFitWidth(w, font, size, maxWidth));
+        lines.push(w.slice(0, fit));
+        w = w.slice(fit);
+      }
+      var candidate = cur ? (cur + " " + w) : w;
+      if(pdfTextWidth(candidate, font, size) > maxWidth){
+        if(cur) lines.push(cur);
+        cur = w;
+      } else {
+        cur = candidate;
+      }
+    });
+    if(cur) lines.push(cur);
+    return lines.length ? lines : [""];
+  }
+
+  function pdfWrapText(text, maxWidth, font, size){
+    var paras = toPdfText(text).split("\n");
+    var out = [];
+    paras.forEach(function(p){ out = out.concat(pdfWrapParagraph(p, maxWidth, font, size)); });
+    return out;
+  }
+
+  // Header row for a category's rating table: "Sub-domain | Score | Notes",
+  // bold, with a thin rule underneath in that category's bar color so the
+  // table reads as belonging to the colored banner above it. The returned
+  // line points its own `repeatHeader` back at itself, so pdfPaginate can
+  // reprint this header at the top of a new page if the table runs on.
+  function pdfLayoutTableHeader(cat, ctx){
+    var barColors = cat && cat.bar ? PDF_BAR_COLORS[cat.bar] : null;
+    var headerLine = {
+      size: PDF_BODY_SIZE, bar: null, shade: null, isTableHeader: true, w: ctx.contentW,
+      ruleBelow: barColors ? barColors.bg : PDF_INK_DEFAULT,
+      segments: [
+        { text: "Sub-domain", font:"F2", color: PDF_INK_DEFAULT, xPts: 0 },
+        { text: "Score", font:"F2", color: PDF_INK_DEFAULT, xPts: ctx.labelW },
+        { text: "Notes", font:"F2", color: PDF_INK_DEFAULT, xPts: ctx.notesStart }
+      ]
+    };
+    var arr = [headerLine];
+    headerLine.repeatHeader = arr;
+    return arr;
+  }
+
+  // One row of a rating table: label and score columns sit at fixed point
+  // offsets, score colored by band same as the on-screen chips. The note
+  // is capped to PDF_NOTE_MAX_CHARS characters, then wraps within its own
+  // column; when it wraps to more than one line, the label/score only
+  // print on the row's first line, and every line of the row shares the
+  // same zebra shade so the row still reads as one unit. `headerLines`
+  // (from pdfLayoutTableHeader) is threaded through so the header can be
+  // reprinted if this row's table runs onto a new page.
+  function pdfLayoutTableRow(item, index, headerLines, ctx){
+    var label = toPdfText(item.label);
+    var labelFit = pdfFitWidth(label, "F1", PDF_BODY_SIZE, ctx.labelW - 6);
+    if(labelFit < label.length) label = label.slice(0, labelFit);
+    var scoreText = item.score != null ? (String(item.score) + "/10") : "not rated";
+    var note = item.note ? pdfTruncateNote(toPdfText(item.note), PDF_NOTE_MAX_CHARS) : "";
+    var noteLines = note ? pdfWrapParagraph(note, ctx.notesW - 6, "F1", PDF_BODY_SIZE) : [""];
+    var shade = (index % 2 === 1) ? PDF_ZEBRA_SHADE : null;
+
+    return noteLines.map(function(noteLine, i){
+      var segments = [];
+      if(i === 0){
+        segments.push({ text: label, font:"F1", color: PDF_INK_DEFAULT, xPts: 0 });
+        if(item.score != null){
+          var bc = PDF_BAND_COLORS[bandFor(item.score)];
+          segments.push({ text: scoreText, font:"F2", color: bc ? bc.bg : PDF_INK_DEFAULT, xPts: ctx.labelW });
+        } else {
+          segments.push({ text: scoreText, font:"F1", color: "#8a8478", xPts: ctx.labelW });
+        }
+      }
+      if(noteLine) segments.push({ text: noteLine, font:"F1", color: PDF_INK_DEFAULT, xPts: ctx.notesStart });
+      return { size: PDF_BODY_SIZE, bar: null, shade: shade, w: ctx.contentW, segments: segments, repeatHeader: headerLines };
+    });
+  }
+
+  // blocks: [{ kind: "title"|"h2"|"h3"|"text"|"gap"|"tableHeader"|"tableRow", value, bar, tint }]
+  // "bar" (on h2/h3) names a PDF_BAR_COLORS key, drawn as a colored banner
+  // behind that header line. "tint" (on text) names a PDF_BAR_COLORS key,
+  // drawn as a light background tint behind that line (used for the SMART
+  // goals' Stop/Start/Continue rows). "tableHeader"/"tableRow" render a
+  // category's rating sub-domains as an aligned table with score colored
+  // by band. `ctx` (a makePdfLayoutCtx() result) sets the wrapping/column
+  // width this block list lays out at -- full page width, or one side-by-
+  // side half-width column. Returns a flat array of layout lines, each
+  // { size, bar, shade, ruleBelow, w, repeatHeader, segments:[{text,font,color,xPts}] },
+  // ready to paginate.
+  function pdfLayoutBlocks(blocks, ctx){
+    ctx = ctx || PDF_FULL_CTX;
+    var lines = [];
+    var currentTableHeader = null;
+    blocks.forEach(function(b){
+      if(b.kind === "gap"){
+        currentTableHeader = null;
+        lines.push({ size:PDF_BODY_SIZE, bar:null, w:ctx.contentW, segments:[{ text:"", font:"F1", color:PDF_INK_DEFAULT }] });
+        return;
+      }
+      if(b.kind === "tableHeader"){
+        var headerLines = pdfLayoutTableHeader(b.cat, ctx);
+        currentTableHeader = headerLines;
+        lines = lines.concat(headerLines);
+        return;
+      }
+      if(b.kind === "tableRow"){
+        lines = lines.concat(pdfLayoutTableRow(b.item, b.index, currentTableHeader, ctx));
+        return;
+      }
+      currentTableHeader = null;
+      var size = b.kind === "title" ? PDF_TITLE_SIZE : (b.kind === "h2" || b.kind === "h3") ? PDF_HEAD_SIZE : PDF_BODY_SIZE;
+      var font = (b.kind === "title" || b.kind === "h2" || b.kind === "h3") ? "F2" : "F1";
+      var barColors = b.bar ? PDF_BAR_COLORS[b.bar] : null;
+      var tintColors = b.tint ? PDF_BAR_COLORS[b.tint] : null;
+      var textColor = barColors ? barColors.ink : PDF_INK_DEFAULT;
+      var shade = tintColors ? pdfTint(tintColors.bg, PDF_SSC_TINT_ALPHA) : null;
+      pdfWrapText(b.value, ctx.contentW, font, size).forEach(function(line, idx){
+        var segments = [{ text:line, font:font, color:textColor }];
+        if(b.rightText && idx === 0){
+          var rightText = toPdfText(b.rightText);
+          var rtWidth = pdfTextWidth(rightText, font, size);
+          segments.push({ text:rightText, font:font, color:textColor, xPts: ctx.contentW - rtWidth });
+        }
+        lines.push({ size:size, bar: b.bar || null, shade: shade, w: ctx.contentW, segments:segments });
+      });
+    });
+    return lines;
+  }
+
+  // Paginates `lines` into pages, optionally continuing from an
+  // already-open page: `start` (if given) is { current: [existing lines on
+  // the still-open page], y: the y position to continue from }, letting a
+  // second block of content (e.g. the rating columns) keep filling the
+  // same page an earlier block (e.g. the intro) left open, instead of
+  // always starting fresh at the top of a new page. Returns
+  // { pages: [...completed pages], tailLines: [still-open page's lines],
+  // tailY: y position after the last placed line } -- call pdfFinalizePages()
+  // to fold tailLines into pages when nothing more will be appended.
+  function pdfPaginate(lines, start){
+    var pages = [];
+    var current = (start && start.current) ? start.current.slice() : [];
+    var y = (start && start.y != null) ? start.y : (PDF_PAGE_H - PDF_MARGIN_TOP);
+    function place(line){
+      current.push({ size: line.size, bar: line.bar, shade: line.shade, ruleBelow: line.ruleBelow, w: line.w, segments: line.segments, y: y });
+      y -= line.size * PDF_LEADING_FACTOR;
+    }
+    lines.forEach(function(line){
+      var leading = line.size * PDF_LEADING_FACTOR;
+      if(y - leading < PDF_MARGIN_BOTTOM){
+        pages.push(current);
+        current = [];
+        y = PDF_PAGE_H - PDF_MARGIN_TOP;
+        // If a rating table is running across the page break, reprint its
+        // header at the top of the new page so the columns stay labeled.
+        if(line.repeatHeader && !line.isTableHeader){
+          line.repeatHeader.forEach(place);
+        }
+      }
+      place(line);
+    });
+    return { pages: pages, tailLines: current, tailY: y };
+  }
+
+  // Folds a pdfPaginate() result's still-open tail page into its completed
+  // pages list, for when nothing more will be appended to it.
+  function pdfFinalizePages(state){
+    var pages = state.pages.slice();
+    if(state.tailLines.length || !pages.length) pages.push(state.tailLines);
+    return pages;
+  }
+
+  function pdfWithOffsetX(line, offsetX){
+    return { size:line.size, bar:line.bar, shade:line.shade, ruleBelow:line.ruleBelow, w:line.w, segments:line.segments, y:line.y, offsetX:offsetX };
+  }
+
+  // Lays out the intro (title/player details/season ahead) and then, on
+  // the SAME page(s) -- continuing right where the intro left off rather
+  // than starting a fresh page -- the four rating categories as two
+  // independent side-by-side half-width columns. The two columns are
+  // paginated independently of one another after that shared start point;
+  // if one runs longer than the other, its own later pages simply have a
+  // blank opposite column.
+  function pdfLayoutIntroAndRatings(introBlocks, leftBlocks, rightBlocks){
+    var introState = pdfPaginate(pdfLayoutBlocks(introBlocks, PDF_FULL_CTX));
+    var leftState = pdfPaginate(pdfLayoutBlocks(leftBlocks, PDF_COL_CTX), { current: [], y: introState.tailY });
+    var rightState = pdfPaginate(pdfLayoutBlocks(rightBlocks, PDF_COL_CTX), { current: [], y: introState.tailY });
+    var leftPages = pdfFinalizePages(leftState);
+    var rightPages = pdfFinalizePages(rightState);
+    var rightOffsetX = PDF_COL_W + PDF_COL_GUTTER;
+
+    var pages = introState.pages.slice(); // normally empty -- the intro fits on one page
+    var firstPage = introState.tailLines
+      .concat((leftPages[0] || []).map(function(ln){ return pdfWithOffsetX(ln, 0); }))
+      .concat((rightPages[0] || []).map(function(ln){ return pdfWithOffsetX(ln, rightOffsetX); }));
+    pages.push(firstPage);
+
+    var count = Math.max(leftPages.length, rightPages.length);
+    for(var i=1;i<count;i++){
+      var l = (leftPages[i] || []).map(function(ln){ return pdfWithOffsetX(ln, 0); });
+      var r = (rightPages[i] || []).map(function(ln){ return pdfWithOffsetX(ln, rightOffsetX); });
+      pages.push(l.concat(r));
+    }
+    return pages;
+  }
+
+  // Lays out one section of the document into pages. An "introRatings"
+  // section merges the intro and the rating tables onto the same page(s)
+  // (see pdfLayoutIntroAndRatings()); a "flow" section is a plain
+  // single full-width column, starting fresh on its own page (used for the
+  // closing strengths/improvements/goals summary).
+  function pdfLayoutSection(section){
+    if(section.type === "introRatings"){
+      return pdfLayoutIntroAndRatings(section.intro, section.left, section.right);
+    }
+    return pdfFinalizePages(pdfPaginate(pdfLayoutBlocks(section.blocks, PDF_FULL_CTX)));
+  }
+
+  // Returns a Uint8Array of a complete, valid PDF file built from
+  // `sections` -- an array of { type:"introRatings", intro, left, right }
+  // or { type:"flow", blocks } (see buildIdpPdfSections()).
+  function buildPdfBytes(sections){
+    var pages = [];
+    sections.forEach(function(section){
+      pages = pages.concat(pdfLayoutSection(section));
+    });
+
+    var objects = [];
+    function addObject(body){ objects.push(body); return objects.length; }
+
+    var fontF1 = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    var fontF2 = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+
+    var pageNums = [], contentNums = [];
+    pages.forEach(function(){
+      pageNums.push(addObject("PLACEHOLDER"));
+      contentNums.push(addObject("PLACEHOLDER"));
+    });
+
+    var pagesObjNum = addObject("PLACEHOLDER");
+    var catalogObjNum = addObject("<< /Type /Catalog /Pages " + pagesObjNum + " 0 R >>");
+
+    objects[pagesObjNum - 1] =
+      "<< /Type /Pages /Kids [" + pageNums.map(function(n){ return n + " 0 R"; }).join(" ") + "] /Count " + pageNums.length + " >>";
+
+    pages.forEach(function(pageLines, i){
+      var stream = "";
+      pageLines.forEach(function(l){
+        var baseX = PDF_MARGIN_L + (l.offsetX || 0);
+        var lineW = l.w != null ? l.w : PDF_CONTENT_W;
+        var rectBottom = l.y - l.size * 0.30;
+        var rectH = l.size * 1.35;
+        if(l.bar){
+          var barColors = PDF_BAR_COLORS[l.bar];
+          if(barColors){
+            var rectX = baseX - 6;
+            var rectW = lineW + 12;
+            stream += pdfColorOp(barColors.bg, "rg") + "\n";
+            stream += rectX.toFixed(2) + " " + rectBottom.toFixed(2) + " " + rectW.toFixed(2) + " " + rectH.toFixed(2) + " re f\n";
+          }
+        } else if(l.shade){
+          stream += pdfColorOp(l.shade, "rg") + "\n";
+          stream += baseX.toFixed(2) + " " + rectBottom.toFixed(2) + " " + lineW.toFixed(2) + " " + rectH.toFixed(2) + " re f\n";
+        }
+        var x = baseX;
+        (l.segments || []).forEach(function(seg){
+          var segX = (seg.xPts != null) ? (baseX + seg.xPts) : x;
+          if(seg.text){
+            stream += pdfColorOp(seg.color || PDF_INK_DEFAULT, "rg") + "\n";
+            stream += "BT\n/" + seg.font + " " + l.size + " Tf\n1 0 0 1 " + segX.toFixed(2) + " " + l.y.toFixed(2) + " Tm\n(" + escapePdfString(seg.text) + ") Tj\nET\n";
+          }
+          x = segX + pdfTextWidth(seg.text, seg.font, l.size);
+        });
+        if(l.ruleBelow){
+          var ruleY = l.y - l.size * 0.45;
+          stream += pdfColorOp(l.ruleBelow, "rg") + "\n";
+          stream += baseX.toFixed(2) + " " + ruleY.toFixed(2) + " " + lineW.toFixed(2) + " " + PDF_RULE_WIDTH.toFixed(2) + " re f\n";
+        }
+      });
+      objects[contentNums[i] - 1] = "<< /Length " + stream.length + " >>\nstream\n" + stream + "endstream";
+      objects[pageNums[i] - 1] =
+        "<< /Type /Page /Parent " + pagesObjNum + " 0 R /MediaBox [0 0 " + PDF_PAGE_W + " " + PDF_PAGE_H + "] " +
+        "/Resources << /Font << /F1 " + fontF1 + " 0 R /F2 " + fontF2 + " 0 R >> >> " +
+        "/Contents " + contentNums[i] + " 0 R >>";
+    });
+
+    var out = "%PDF-1.4\n";
+    var offsets = [0];
+    for(var i=0;i<objects.length;i++){
+      offsets.push(out.length);
+      out += (i+1) + " 0 obj\n" + objects[i] + "\nendobj\n";
+    }
+    var xrefStart = out.length;
+    out += "xref\n0 " + (objects.length+1) + "\n";
+    out += "0000000000 65535 f \n";
+    for(var j=1;j<offsets.length;j++){
+      out += String(offsets[j]).padStart(10, "0") + " 00000 n \n";
+    }
+    out += "trailer\n<< /Size " + (objects.length+1) + " /Root " + catalogObjNum + " 0 R >>\n";
+    out += "startxref\n" + xrefStart + "\n%%EOF";
+
+    var bytes = new Uint8Array(out.length);
+    for(var k=0;k<out.length;k++) bytes[k] = out.charCodeAt(k) & 0xFF;
+    return bytes;
+  }
+
+  // Maps each SMART goal block to the same bar color as its matching
+  // rating category, so a goal's colored sub-header ties it back to the
+  // section it came from (the non-soccer goal gets the neutral grey used
+  // for the section header itself). The Stop/Start/Continue rows in each
+  // goal block are tinted with this same color, same idea as the
+  // corresponding light-colored textarea backgrounds on the web page.
+  var PDF_GOAL_BAR = { technical:"technical", tactical:"tactical", psychoSocial:"psychosocial", nonSoccer:"grey" };
+
+  // Builds the document as two sections: (1) title/player details/season
+  // ahead immediately followed by all four rating categories -- Technical+
+  // Tactical in a left column, Physical+Psycho-Social in a right column --
+  // on the same page(s); (2) areas of strength/improvement and the SMART
+  // goals, back to a single full-width column, starting fresh on its own
+  // page. See buildPdfBytes()/pdfLayoutSection() for how sections render.
+  function buildIdpPdfSections(d){
+    var intro = [];
+    intro.push({ kind:"title", value:"Player IDP — " + (d.player || "Unnamed player") });
+    intro.push({ kind:"gap" });
+
+    intro.push({ kind:"h2", value:"Player details", bar:"grey" });
+    intro.push({ kind:"text", value:"Player: " + (d.player || "—") });
+    intro.push({ kind:"text", value:"Date: " + (d.date || "—") + "   Age group: " + (d.ageGroup || "—") + "   Team: " + (d.team || "—") });
+    intro.push({ kind:"text", value:"Average score: " + (d.avgScore != null ? d.avgScore : "—") + " (" + (d.ratedCount||0) + "/" + TOTAL_RATING_ITEMS + " rated)" });
+    intro.push({ kind:"gap" });
+
+    intro.push({ kind:"h2", value:"The season ahead", bar:"gold" });
+    intro.push({ kind:"text", value:"Goal for next season: " + (d.goalNextSeason || "—") });
+    intro.push({ kind:"text", value:"How to achieve it: " + (d.howAchieve || "—") });
+    intro.push({ kind:"text", value:"Positions to play more: " + ((d.positions||[]).join(", ") || "—") });
+    intro.push({ kind:"gap" });
+
+    function categoryBlocks(list, cat){
+      var items = (d.ratings && d.ratings[cat.key]) || [];
+      var catSum = 0, catRated = 0;
+      items.forEach(function(item){ if(item.score != null){ catSum += item.score; catRated++; } });
+      var avgText = catRated ? "Avg " + (catSum/catRated).toFixed(1) : "Avg —";
+      list.push({ kind:"h2", value:cat.title, bar:cat.bar, rightText:avgText });
+      list.push({ kind:"tableHeader", cat:cat });
+      items.forEach(function(item, index){
+        list.push({ kind:"tableRow", item:item, index:index });
+      });
+    }
+    var byKey = {};
+    CATEGORIES.forEach(function(cat){ byKey[cat.key] = cat; });
+    var ratingsLeft = [], ratingsRight = [];
+    categoryBlocks(ratingsLeft, byKey.technical);
+    ratingsLeft.push({ kind:"gap" });
+    categoryBlocks(ratingsLeft, byKey.tactical);
+    categoryBlocks(ratingsRight, byKey.physical);
+    ratingsRight.push({ kind:"gap" });
+    categoryBlocks(ratingsRight, byKey.psychoSocial);
+
+    var summary = [];
+    summary.push({ kind:"h2", value:"Areas of strength", bar:"green" });
+    SI_ROWS.forEach(function(row){
+      var s = (d.strengths||{})[row.key] || {};
+      summary.push({ kind:"text", value:"- " + row.label + ": " + (s.area || "—") + (s.detail ? " — " + s.detail : "") });
+    });
+    summary.push({ kind:"gap" });
+
+    summary.push({ kind:"h2", value:"Areas for improvement", bar:"red" });
+    SI_ROWS.forEach(function(row){
+      var im = (d.improvements||{})[row.key] || {};
+      summary.push({ kind:"text", value:"- " + row.label + ": " + (im.area || "—") + (im.detail ? " — " + im.detail : "") });
+    });
+    summary.push({ kind:"gap" });
+
+    summary.push({ kind:"h2", value:"SMART goals", bar:"grey" });
+    GOAL_BLOCKS.forEach(function(g){
+      var gd = (d.goals||{})[g.key] || {};
+      var tintKey = PDF_GOAL_BAR[g.key] || "grey";
+      summary.push({ kind:"h3", value:g.title, bar: tintKey });
+      summary.push({ kind:"text", value:"Outcome goal: " + (gd.outcome || "—") });
+      summary.push({ kind:"text", value:"- Stop: " + (gd.stop || "—"), tint: tintKey });
+      summary.push({ kind:"text", value:"- Start: " + (gd.start || "—"), tint: tintKey });
+      summary.push({ kind:"text", value:"- Continue: " + (gd.cont || "—"), tint: tintKey });
+      summary.push({ kind:"text", value:"- Progress weeks 1–4: " + (gd.w1_4 || "—") });
+      summary.push({ kind:"text", value:"- Progress weeks 5–16: " + (gd.w5_16 || "—") });
+      summary.push({ kind:"text", value:"- Progress weeks 17+: " + (gd.w17plus || "—") });
+      summary.push({ kind:"gap" });
+    });
+
+    return [
+      { type:"introRatings", intro: intro, left: ratingsLeft, right: ratingsRight },
+      { type:"flow", blocks: summary }
+    ];
+  }
+  function slug(s){ return String(s||"player").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "player"; }
+
+  // Native browser download — works anywhere this page is opened (a plain
+  // web host, or straight from a local file), with no platform runtime
+  // involved: build a Blob, point a throwaway <a download> link at it, and
+  // click it programmatically.
+  function downloadViaBrowser(filename, data){
+    var blob = new Blob([data], { type: "text/markdown;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function downloadMarkdown(d, statusElId){
+    var statusEl = statusElId ? document.getElementById(statusElId) : null;
+    var filename = "idp-" + slug(d.player) + "-" + (d.date || "draft") + ".md";
+    if(!downloadsApi){
+      // Not running inside a host that grants the "downloads" capability
+      // (e.g. this page was opened directly, or hosted elsewhere) — fall
+      // back to a plain browser download instead.
+      try{
+        downloadViaBrowser(filename, toMarkdown(d));
+        if(statusEl) statusEl.textContent = "Downloaded.";
+      }catch(e){
+        if(statusEl) statusEl.textContent = "Couldn't download right now.";
+      }
+      return;
+    }
+    downloadsApi.save({ filename: filename, data: toMarkdown(d) }).then(function(){
+      if(statusEl) statusEl.textContent = "Downloaded.";
+    }).catch(function(err){
+      if(!statusEl) return;
+      if(err && err.code === "declined") statusEl.textContent = "";
+      else statusEl.textContent = "Couldn't download right now.";
+    });
+  }
+
+  // This is what the "Download a copy" / "Download your copy" buttons
+  // actually call — a real .pdf file, built with buildPdfBytes() above.
+  // Tries the platform's downloads capability first (nicer save prompt on
+  // hosts that support it); if that's unavailable OR the host hasn't
+  // enabled .pdf specifically (some do, some only allow a base set of
+  // extensions), falls back to a plain browser download, which has no
+  // such restriction.
+  function downloadPdf(d, statusElId){
+    var statusEl = statusElId ? document.getElementById(statusElId) : null;
+    var filename = "idp-" + slug(d.player) + "-" + (d.date || "draft") + ".pdf";
+    var bytes;
+    try{
+      bytes = buildPdfBytes(buildIdpPdfSections(d));
+    }catch(e){
+      if(statusEl) statusEl.textContent = "Couldn't build the PDF right now.";
+      return;
+    }
+    if(!downloadsApi){
+      try{
+        var blob = new Blob([bytes], { type: "application/pdf" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+        if(statusEl) statusEl.textContent = "Downloaded.";
+      }catch(e){
+        if(statusEl) statusEl.textContent = "Couldn't download right now.";
+      }
+      return;
+    }
+    downloadsApi.save({ filename: filename, data: bytes }).then(function(){
+      if(statusEl) statusEl.textContent = "Downloaded.";
+    }).catch(function(err){
+      var code = err && err.code;
+      if(code === "declined"){ if(statusEl) statusEl.textContent = ""; return; }
+      if(code === "extension_not_enabled" || code === "rejected_extension"){
+        // This host's downloads capability won't allow .pdf specifically —
+        // fall back to a plain browser download instead of giving up.
+        try{
+          var blob2 = new Blob([bytes], { type: "application/pdf" });
+          var url2 = URL.createObjectURL(blob2);
+          var a2 = document.createElement("a");
+          a2.href = url2;
+          a2.download = filename;
+          document.body.appendChild(a2);
+          a2.click();
+          document.body.removeChild(a2);
+          setTimeout(function(){ URL.revokeObjectURL(url2); }, 1000);
+          if(statusEl) statusEl.textContent = "Downloaded.";
+        }catch(e){
+          if(statusEl) statusEl.textContent = "Couldn't download right now.";
+        }
+        return;
+      }
+      if(statusEl) statusEl.textContent = "Couldn't download right now.";
+    });
+  }
+
+  // ================= submit flow =================
+  function showBanner(kind, html){
+    document.getElementById("bannerSlot").innerHTML =
+      '<div class="banner ' + kind + '">' + html + '</div>';
+  }
+  function clearBanner(){ document.getElementById("bannerSlot").innerHTML = ""; }
+
+  function setSubmitting(isSubmitting){
+    document.getElementById("submitBtn").disabled = isSubmitting;
+    document.getElementById("submitBtn").textContent = isSubmitting ? "Submitting…" : "Submit my IDP";
+  }
+
+  // delivered: true = confirmed received privately by the coach's sheet;
+  // "unconfigured" = no receiver is set up (SUBMIT_URL still a
+  // placeholder); "rejected" = the receiver responded but declined the
+  // submission (e.g. the secret in this page no longer matches the
+  // script's); "unknown" = we sent it but couldn't confirm the coach's
+  // server got it (this can happen even when the send worked — see
+  // submitForm below).
+  function showThankYou(d, delivered){
+    document.getElementById("formWrap").style.display = "none";
+    var wrap = document.getElementById("thankyouWrap");
+    wrap.style.display = "block";
+    var message;
+    if(delivered === true){
+      message = "Your IDP has been sent straight to your coach and saved privately — you're all set. Download your copy below too, if you'd like to keep one for yourself.";
+    } else if(delivered === "rejected"){
+      message = "Your coach's system didn't accept this submission — something's likely misconfigured on their end (e.g. a changed setup key). Download your copy below and let your coach know, so they can check it.";
+    } else if(delivered === "unconfigured"){
+      message = "This page isn't connected to your coach yet, so nothing was sent automatically. Download your copy below and get it to your coach directly.";
+    } else {
+      message = "Your IDP was sent, but we couldn't fully confirm your coach's system received it (this sometimes happens even when it worked). Download your copy below just in case, and check with your coach if you're not sure it arrived.";
+    }
+    wrap.innerHTML =
+      '<div class="card thankyou">' +
+        '<div class="big-check">✓</div>' +
+        '<h2>Submitted, ' + esc(d.player || "player") + '!</h2>' +
+        '<p>' + message + '</p>' +
+        '<div class="submit-bar" style="justify-content:center;">' +
+          '<button class="btn btn-primary" id="tyDownloadBtn" type="button">Download your copy</button>' +
+          '<button class="btn btn-ghost" id="tyAnotherBtn" type="button">Start another response</button>' +
+        '</div>' +
+        '<p class="submit-note" id="tyStatusNote"></p>' +
+      '</div>';
+    document.getElementById("tyDownloadBtn").addEventListener("click", function(){ downloadPdf(d, "tyStatusNote"); });
+    document.getElementById("tyAnotherBtn").addEventListener("click", function(){ location.reload(); });
+  }
+
+  function submitForm(){
+    clearBanner();
+    var data = collectFormData();
+    var errs = validate(data);
+    if(errs.length){ showBanner("warn", errs.join(" ")); return; }
+
+    var submission = Object.assign({}, data, {
+      submittedAt: new Date().toISOString()
+    });
+
+    if(!SUBMIT_URL || SUBMIT_URL.indexOf("PASTE_YOUR_WEB_APP_URL_HERE") !== -1){
+      showThankYou(submission, "unconfigured");
+      return;
+    }
+
+    setSubmitting(true);
+    var payload = Object.assign({}, submission, {
+      secret: SUBMIT_SECRET,
+      markdown: toMarkdown(submission)
+    });
+    fetch(SUBMIT_URL, { method: "POST", body: JSON.stringify(payload) })
+      .then(function(res){ return res.json(); })
+      .then(function(json){
+        setSubmitting(false);
+        showThankYou(submission, (json && json.ok) ? true : "rejected");
+      })
+      .catch(function(){
+        // The request may well have gone through and been written to the
+        // sheet — the fetch can fail here purely because the browser
+        // couldn't read the cross-origin response, not because the write
+        // failed. We genuinely can't tell the difference from here, so
+        // say so rather than guessing either way.
+        setSubmitting(false);
+        showThankYou(submission, "unknown");
+      });
+  }
+
+  // ================= wiring =================
+  function wire(){
+    document.getElementById("submitBtn").addEventListener("click", submitForm);
+    document.getElementById("downloadDraftBtn").addEventListener("click", function(){
+      downloadPdf(collectFormData(), "submitStatusNote");
+    });
+    document.getElementById("formWrap").addEventListener("click", function(e){
+      var btn = e.target.closest(".score-btn");
+      if(!btn) return;
+      var wrap = btn.closest(".score-scale");
+      var newVal = btn.dataset.value;
+      // Clicking the already-selected number again clears that rating,
+      // so a single click both sets and (if needed) un-sets a score.
+      if(wrap.dataset.value === newVal) newVal = "";
+      setScoreValue(wrap, newVal);
+      recomputeProgress();
+      updateStrengthImprovementOptions();
+    });
+  }
+
+  async function initCapabilities(){
+    if(!(window.claude && typeof window.claude.use === "function")) return;
+    try{ downloadsApi = await window.claude.use("downloads"); }catch(e){ downloadsApi = null; }
+  }
+
+  function init(){
+    CATEGORIES.forEach(renderCategoryCard);
+    renderPositions();
+    renderStrengthImprovementRows();
+    renderGoalBlocks();
+    wire();
+    recomputeProgress();
+    initCapabilities();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
