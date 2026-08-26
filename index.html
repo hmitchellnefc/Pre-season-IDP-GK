@@ -233,11 +233,13 @@
   .ssc-tag.cont{ background:var(--good-wash); color:var(--good); }
   @media (max-width:640px){ .sscarow{ grid-template-columns:1fr; } }
   /* Stop/Start/Continue answer boxes get a light background tint matching
-     their goal's category color, so it's visually clear at a glance which
-     goal (Technical/Tactical/Psycho-Social) each block belongs to. */
-  .ssc-input.cat-technical{ background:var(--bar-technical-wash); border-color:rgba(74,134,200,0.35); }
-  .ssc-input.cat-tactical{ background:var(--bar-tactical-wash); border-color:rgba(209,72,63,0.35); }
-  .ssc-input.cat-psycho-social{ background:var(--bar-psychosocial-wash); border-color:rgba(79,158,92,0.35); }
+     the traffic-light meaning of each field (Stop=red, Start=amber,
+     Continue=green) — the same red/amber/green already used for the
+     Stop/Start/Continue tags above — rather than the goal's category
+     color, so it's consistent across every goal block. */
+  .ssc-input.stop{ background:var(--danger-wash); border-color:rgba(179,72,61,0.35); }
+  .ssc-input.start{ background:var(--warn-wash); border-color:rgba(201,162,51,0.35); }
+  .ssc-input.cont{ background:var(--good-wash); border-color:rgba(63,143,85,0.35); }
   .progress-cols{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:12px; }
   @media (max-width:640px){ .progress-cols{ grid-template-columns:1fr; } }
   .progress-cols .pc-label{ font-size:0.72rem; font-weight:600; color:var(--ink-muted); margin-bottom:4px; display:block; font-family:var(--font-mono); }
@@ -403,8 +405,8 @@
   // and the same secret word you set as SHARED_SECRET in that script.
   // Until you do, submitting here just shows the download-your-copy
   // screen — nothing is sent anywhere.
-  var SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzppnnzK9bHZapbvdMaIU5QdZN9F68l5raVNTIfcL32RsmF9dnY64Z-ne6K4BwaXKjEQA/exec";
-  var SUBMIT_SECRET = "ORINOCCO";
+  var SUBMIT_URL = "PASTE_YOUR_GK_WEB_APP_URL_HERE";
+  var SUBMIT_SECRET = "PASTE_YOUR_GK_SHARED_SECRET_HERE";
 
   // ---------- field definitions ----------
   var TECHNICAL = [
@@ -635,19 +637,12 @@
     });
   }
 
-  // Maps a goal block's key to its matching category color class, so the
-  // Stop/Start/Continue boxes for e.g. the Technical goal pick up the same
-  // blue used for the Technical rating card. The Non-soccer goal has no
-  // category of its own, so it gets no tint (plain neutral boxes).
-  var GOAL_CATEGORY_CLASS = { technical:"cat-technical", tactical:"cat-tactical", psychoSocial:"cat-psycho-social" };
-
   function goalFieldsHTML(key){
-    var tintClass = GOAL_CATEGORY_CLASS[key] ? (" " + GOAL_CATEGORY_CLASS[key]) : "";
     return (
       '<div class="field-row"><span class="field-label">Outcome goal</span><textarea id="goal_' + key + '_outcome" rows="2"></textarea></div>' +
-      '<div class="sscarow"><div class="ssc-tag stop">Stop</div><textarea class="ssc-input' + tintClass + '" id="goal_' + key + '_stop" rows="2"></textarea></div>' +
-      '<div class="sscarow"><div class="ssc-tag start">Start</div><textarea class="ssc-input' + tintClass + '" id="goal_' + key + '_start" rows="2"></textarea></div>' +
-      '<div class="sscarow"><div class="ssc-tag cont">Continue</div><textarea class="ssc-input' + tintClass + '" id="goal_' + key + '_continue" rows="2"></textarea></div>' +
+      '<div class="sscarow"><div class="ssc-tag stop">Stop</div><textarea class="ssc-input stop" id="goal_' + key + '_stop" rows="2"></textarea></div>' +
+      '<div class="sscarow"><div class="ssc-tag start">Start</div><textarea class="ssc-input start" id="goal_' + key + '_start" rows="2"></textarea></div>' +
+      '<div class="sscarow"><div class="ssc-tag cont">Continue</div><textarea class="ssc-input cont" id="goal_' + key + '_continue" rows="2"></textarea></div>' +
       '<div class="progress-cols">' +
         '<div><span class="pc-label">Weeks 1–4</span><textarea id="goal_' + key + '_w1_4" rows="2"></textarea></div>' +
         '<div><span class="pc-label">Weeks 5–16</span><textarea id="goal_' + key + '_w5_16" rows="2"></textarea></div>' +
@@ -1468,9 +1463,9 @@
       var tintKey = PDF_GOAL_BAR[g.key] || "grey";
       summary.push({ kind:"h3", value:g.title, bar: tintKey });
       summary.push({ kind:"text", value:"Outcome goal: " + (gd.outcome || "—") });
-      summary.push({ kind:"text", value:"- Stop: " + (gd.stop || "—"), tint: tintKey });
-      summary.push({ kind:"text", value:"- Start: " + (gd.start || "—"), tint: tintKey });
-      summary.push({ kind:"text", value:"- Continue: " + (gd.cont || "—"), tint: tintKey });
+      summary.push({ kind:"text", value:"- Stop: " + (gd.stop || "—"), tint: "red" });
+      summary.push({ kind:"text", value:"- Start: " + (gd.start || "—"), tint: "gold" });
+      summary.push({ kind:"text", value:"- Continue: " + (gd.cont || "—"), tint: "green" });
       summary.push({ kind:"text", value:"- Progress weeks 1–4: " + (gd.w1_4 || "—") });
       summary.push({ kind:"text", value:"- Progress weeks 5–16: " + (gd.w5_16 || "—") });
       summary.push({ kind:"text", value:"- Progress weeks 17+: " + (gd.w17plus || "—") });
