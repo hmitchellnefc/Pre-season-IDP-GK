@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Player IDP</title>
+<title>Goalkeeper IDP</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
   :root{
@@ -277,7 +277,7 @@
     <div class="topbar-row">
       <div class="brand">
         <span class="dot"></span>
-        <h1>Player IDP</h1>
+        <h1>Goalkeeper IDP</h1>
         <span class="sub">Individual Development Plan</span>
       </div>
     </div>
@@ -309,18 +309,13 @@
         <div class="card-header bar-gold"><h2>The season ahead</h2></div>
         <div class="field-row">
           <span class="field-label">What is something you would like to achieve next season?</span>
-          <p class="card-intro" style="margin-top:0;">This could be scoring a goal in a particular way, using your weak foot more, or something more specific.</p>
+          <p class="card-intro" style="margin-top:0;">This could be commanding your box more, improving your distribution under pressure, or something more specific.</p>
           <textarea id="f_goalNextSeason" rows="3"></textarea>
         </div>
         <div class="field-row">
           <span class="field-label">How could you achieve this goal next season?</span>
           <p class="card-intro" style="margin-top:0;">What could you do to help you reach your goal?</p>
           <textarea id="f_howAchieve" rows="3"></textarea>
-        </div>
-        <div class="field-row">
-          <span class="field-label">What positions would you like to play more?</span>
-          <p class="card-intro" style="margin-top:0;">Select all that apply.</p>
-          <div class="position-grid" id="positionGrid"></div>
         </div>
       </section>
 
@@ -395,7 +390,7 @@
 
   </div>
 
-  <p class="footer-note">Player IDP · submitting sends your answers privately to your coach — nobody else can see them — and you can download your own copy too.</p>
+  <p class="footer-note">Goalkeeper IDP · submitting sends your answers privately to your coach — nobody else can see them — and you can download your own copy too.</p>
 </div>
 
 <script>
@@ -408,46 +403,57 @@
   // and the same secret word you set as SHARED_SECRET in that script.
   // Until you do, submitting here just shows the download-your-copy
   // screen — nothing is sent anywhere.
-  var SUBMIT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
-  var SUBMIT_SECRET = "PASTE_YOUR_SHARED_SECRET_HERE";
+  var SUBMIT_URL = "PASTE_YOUR_GK_WEB_APP_URL_HERE";
+  var SUBMIT_SECRET = "PASTE_YOUR_GK_SHARED_SECRET_HERE";
 
   // ---------- field definitions ----------
   var TECHNICAL = [
-    {k:"first_touch", l:"First touch", d:"I can control the ball at different heights and speeds every time"},
-    {k:"short_passing", l:"Short passing", d:"I can complete passes to nearby teammates every time"},
-    {k:"long_passing", l:"Long passing", d:"I can complete passes to teammates far away every time"},
-    {k:"finishing", l:"Finishing", d:"I can score with most of my shots"},
-    {k:"shielding", l:"Shielding", d:"I can always protect the ball from being stolen"},
-    {k:"ball_striking", l:"Ball striking", d:"I can kick the ball accurately and powerfully with different parts of my feet"},
-    {k:"weak_foot", l:"Weak foot", d:"I can use my weak foot like my strong foot"},
-    {k:"tackling", l:"Tackling", d:"I win every tackle I make"},
-    {k:"1v1_attack", l:"1v1 attack", d:"I always beat the defender 1v1"},
-    {k:"1v1_defense", l:"1v1 defense", d:"I never get dribbled past by an attacker"},
-    {k:"heading", l:"Heading (if applicable)", d:"I can head the ball with accuracy and power every time"}
+    {k:"handling", l:"Handling", d:"I can catch everything"},
+    {k:"block_save", l:"Block save", d:"I can always make the block save when appropriate"},
+    {k:"smother_save", l:"Smother save", d:"I can always make the smother save when appropriate"},
+    {k:"spread_save", l:"Spread save", d:"I can always make the spread save when appropriate"},
+    {k:"top_hand_save", l:"Top hand save", d:"I always save with my top hand when appropriate"},
+    {k:"leading_hand_save", l:"Leading hand save", d:"I always save with my leading hand when appropriate"},
+    {k:"w_catch", l:"“W” catch", d:"I can catch the ball heading shoulders or above"},
+    {k:"basket_catch", l:"Basket catch", d:"I can catch the ball heading to my waist"},
+    {k:"low_barrier_save", l:"Low barrier save", d:"I can prevent shots heading between my legs"},
+    {k:"low_dive", l:"Low dive", d:"I can effectively prevent shots heading to the bottom corners"},
+    {k:"mid_height_dive", l:"Mid-height dive", d:"I can effectively prevent shots heading to the corners"},
+    {k:"high_dive", l:"High dive", d:"I can effectively prevent shots heading to the top corners"},
+    {k:"punching", l:"Punching", d:"I can effectively clear the ball with a punch"},
+    {k:"tipping", l:"Tipping", d:"I can always get fingertips to flick the ball past the goal"},
+    {k:"parrying", l:"Parrying", d:"I can always push the ball away from danger"},
+    {k:"set_position", l:"Set position", d:"I am always ready to make the save"},
+    {k:"crosses_tech", l:"Crosses", d:"I always collect crosses"},
+    {k:"short_passes", l:"Short passes", d:"I can complete all passes in close range"},
+    {k:"long_passes", l:"Long passes", d:"I can complete all passes farther away"},
+    {k:"hand_distribution", l:"Hand distribution", d:"Teammates always keep possession from my throws"}
   ];
   var TACTICAL = [
-    {k:"scanning", l:"Scanning", d:"I am aware of the whole field at all times"},
-    {k:"vision", l:"Vision", d:"I can see what needs to happen before anyone else"},
-    {k:"timing", l:"Timing", d:"I know when things need to happen every time"},
-    {k:"positioning", l:"Positioning", d:"I am always in the right place to defend the goal"},
-    {k:"pressing", l:"Pressing", d:"I know when and how to pressure the ball every time"},
-    {k:"interceptions", l:"Interceptions", d:"I can predict what is about to happen in the game"},
-    {k:"off_ball", l:"Off-the-ball movement", d:"I always make runs that benefit the team"},
-    {k:"creativity", l:"Creativity", d:"I can make the pass/dribble/shot in a variety of different ways"},
-    {k:"disguise", l:"Disguise", d:"I can always hide what I am about to do"},
-    {k:"technical_application", l:"Technical application", d:"I know what technique will be most effective in each moment"}
+    {k:"1v1s", l:"1v1s", d:"I stop every breakaway"},
+    {k:"angle_play", l:"Angle play", d:"I save every shot from the side"},
+    {k:"cutbacks", l:"Cutbacks", d:"I can prevent cutbacks"},
+    {k:"moving_inline", l:"Moving in-line", d:"I am always in line with the ball and center of the goal"},
+    {k:"coming_off_line", l:"Coming off the line", d:"I know when to come away from the goal every time"},
+    {k:"recovering", l:"Recovering", d:"I can always get back to set position after a save"},
+    {k:"crosses_tact", l:"Crosses", d:"I know when to come for a cross or not"},
+    {k:"save_selection", l:"Save selection", d:"I know what type of save to make"},
+    {k:"goal_kicks", l:"Goal kicks", d:"I know what to do on every goal kick situation"},
+    {k:"organization", l:"Organization", d:"I always have my defense set up"},
+    {k:"communication_tact", l:"Communication", d:"I always talk to the players and give them information"},
+    {k:"back_passes", l:"Back passes", d:"I always know what to do when receiving a back pass"}
   ];
   var PHYSICAL = [
     {k:"speed", l:"Speed", d:"How fast I am without the ball"},
-    {k:"soccer_speed", l:"Soccer speed", d:"How fast I am with the ball"},
     {k:"agility", l:"Agility", d:"How quickly I can change direction"},
-    {k:"strength", l:"Strength", d:"How strong I am"},
-    {k:"endurance", l:"Endurance", d:"How long I can play for"},
+    {k:"reactions", l:"Reactions", d:"How quickly my reflexes are"},
+    {k:"linear_footwork", l:"Linear footwork", d:"How quickly I can move off and back towards my line"},
+    {k:"lateral_footwork", l:"Lateral footwork", d:"How quickly I can move across the line/goal"},
+    {k:"deceleration", l:"Deceleration", d:"How quickly I can slow down into set position"},
+    {k:"diving_range", l:"Diving range", d:"How far across the goal I can cover with a dive"},
+    {k:"vertical_range", l:"Vertical range", d:"How high I can cover the goal"},
     {k:"power", l:"Power", d:"How explosive I can be"},
-    {k:"balance", l:"Balance", d:"How steady I am on my feet throughout the game"},
-    {k:"coordination", l:"Coordination", d:"How easy it is for me to use different parts of my body"},
-    {k:"attacking_work_rate", l:"Attacking work rate", d:"I give my all when the team is attacking"},
-    {k:"defending_work_rate", l:"Defending work rate", d:"I give my all when the team is defending"}
+    {k:"endurance", l:"Endurance", d:"How long I can play for"}
   ];
   var PSYCHO_SOCIAL = [
     {k:"aggression", l:"Aggression", d:"I am aggressive with everything I do in soccer"},
@@ -456,15 +462,15 @@
     {k:"concentration", l:"Concentration", d:"I am always focused on the game"},
     {k:"confidence", l:"Confidence", d:"I always make positive decisions whatever the score"},
     {k:"control", l:"Control", d:"I am always disciplined with my decisions"},
-    {k:"composure", l:"Composure", d:"I never let pressure affect my decision or ability to carry it out"},
-    {k:"determination", l:"Determination", d:"I never give up even when things aren't going how I expected"},
+    {k:"composure", l:"Composure", d:"I never let pressure affect my decision or ability to carry out that decision"},
+    {k:"determination", l:"Determination", d:"I never give up even when things are not going how I expected"},
     {k:"humility", l:"Humility", d:"I understand I can always improve"},
     {k:"anxiety", l:"Anxiety", d:"I never let stress affect me negatively"},
     {k:"leadership", l:"Leadership", d:"I always do what is best for the team"},
     {k:"supporting", l:"Supporting", d:"I always believe in my teammates, whatever happens"},
     {k:"respect", l:"Respect", d:"I always pay attention when others are talking to me"},
     {k:"coachability", l:"Coachability", d:"I always want to learn and improve"},
-    {k:"communication", l:"Communication", d:"I always instruct or advise teammates with good information"}
+    {k:"communication_social", l:"Communication", d:"I always instruct or advise teammates with good information"}
   ];
   var CATEGORIES = [
     {key:"technical", title:"Technical", bar:"technical", question:"Where can you improve your technical side of the game?", items:TECHNICAL},
@@ -473,8 +479,6 @@
     {key:"psychoSocial", title:"Psycho-Social", bar:"psychosocial", question:"Where can you improve your psychological and social side of the game?", items:PSYCHO_SOCIAL}
   ];
   var TOTAL_RATING_ITEMS = CATEGORIES.reduce(function(s,c){ return s + c.items.length; }, 0);
-
-  var POSITIONS = ["Full back","Center back","Centre midfield","Wide midfield","Striker"];
 
   var SI_ROWS = [
     {key:"technical", label:"Technical"},
@@ -534,19 +538,6 @@
         '<span class="cat-avg mono" id="avg_' + cat.key + '">Avg —</span></div>' +
       '<p class="card-intro">' + esc(cat.question) + '</p>' +
       cat.items.map(function(item){ return ratingRowHTML(cat.key, item); }).join("");
-  }
-
-  function renderPositions(){
-    var el = document.getElementById("positionGrid");
-    el.innerHTML = POSITIONS.map(function(p, i){
-      var id = "pos_" + i;
-      return '<label class="position-chip" id="chip_' + id + '"><input type="checkbox" id="' + id + '" data-pos="' + esc(p) + '">' + esc(p) + '</label>';
-    }).join("");
-    POSITIONS.forEach(function(p, i){
-      var cb = document.getElementById("pos_" + i);
-      var chip = document.getElementById("chip_pos_" + i);
-      cb.addEventListener("change", function(){ chip.classList.toggle("checked", cb.checked); });
-    });
   }
 
   // Only the sub-domains that belong to a given strength/improvement row's
@@ -732,7 +723,6 @@
       team: document.getElementById("f_team").value.trim(),
       goalNextSeason: document.getElementById("f_goalNextSeason").value.trim(),
       howAchieve: document.getElementById("f_howAchieve").value.trim(),
-      positions: POSITIONS.filter(function(p, i){ return document.getElementById("pos_" + i).checked; }),
       ratings: {},
       strengths: {},
       improvements: {},
@@ -784,13 +774,6 @@
     if(document.getElementById("f_team")) document.getElementById("f_team").value = data.team || "";
     if(document.getElementById("f_goalNextSeason")) document.getElementById("f_goalNextSeason").value = data.goalNextSeason || "";
     if(document.getElementById("f_howAchieve")) document.getElementById("f_howAchieve").value = data.howAchieve || "";
-    (data.positions || []).forEach(function(p){
-      var i = POSITIONS.indexOf(p);
-      if(i >= 0){
-        var cb = document.getElementById("pos_" + i);
-        if(cb){ cb.checked = true; document.getElementById("chip_pos_" + i).classList.add("checked"); }
-      }
-    });
     CATEGORIES.forEach(function(cat){
       var list = (data.ratings && data.ratings[cat.key]) || [];
       list.forEach(function(entry){
@@ -832,7 +815,7 @@
   // ================= markdown export (per-submission) =================
   function toMarkdown(d){
     var lines = [];
-    lines.push("# Player IDP — " + (d.player || "Unnamed player"));
+    lines.push("# Goalkeeper IDP — " + (d.player || "Unnamed player"));
     lines.push("");
     lines.push("Date: " + (d.date || "—") + "  ");
     lines.push("Age group: " + (d.ageGroup || "—") + "  ");
@@ -843,8 +826,6 @@
     lines.push("**Goal for next season:** " + (d.goalNextSeason || "—"));
     lines.push("");
     lines.push("**How to achieve it:** " + (d.howAchieve || "—"));
-    lines.push("");
-    lines.push("**Positions to play more:** " + ((d.positions||[]).join(", ") || "—"));
     lines.push("");
     CATEGORIES.forEach(function(cat){
       lines.push("## " + cat.title);
@@ -1431,7 +1412,7 @@
   // page. See buildPdfBytes()/pdfLayoutSection() for how sections render.
   function buildIdpPdfSections(d){
     var intro = [];
-    intro.push({ kind:"title", value:"Player IDP — " + (d.player || "Unnamed player") });
+    intro.push({ kind:"title", value:"Goalkeeper IDP — " + (d.player || "Unnamed player") });
     intro.push({ kind:"gap" });
 
     intro.push({ kind:"h2", value:"Player details", bar:"grey" });
@@ -1443,7 +1424,6 @@
     intro.push({ kind:"h2", value:"The season ahead", bar:"gold" });
     intro.push({ kind:"text", value:"Goal for next season: " + (d.goalNextSeason || "—") });
     intro.push({ kind:"text", value:"How to achieve it: " + (d.howAchieve || "—") });
-    intro.push({ kind:"text", value:"Positions to play more: " + ((d.positions||[]).join(", ") || "—") });
     intro.push({ kind:"gap" });
 
     function categoryBlocks(list, cat){
@@ -1522,7 +1502,7 @@
 
   function downloadMarkdown(d, statusElId){
     var statusEl = statusElId ? document.getElementById(statusElId) : null;
-    var filename = "idp-" + slug(d.player) + "-" + (d.date || "draft") + ".md";
+    var filename = "gk-idp-" + slug(d.player) + "-" + (d.date || "draft") + ".md";
     if(!downloadsApi){
       // Not running inside a host that grants the "downloads" capability
       // (e.g. this page was opened directly, or hosted elsewhere) — fall
@@ -1553,7 +1533,7 @@
   // such restriction.
   function downloadPdf(d, statusElId){
     var statusEl = statusElId ? document.getElementById(statusElId) : null;
-    var filename = "idp-" + slug(d.player) + "-" + (d.date || "draft") + ".pdf";
+    var filename = "gk-idp-" + slug(d.player) + "-" + (d.date || "draft") + ".pdf";
     var bytes;
     try{
       bytes = buildPdfBytes(buildIdpPdfSections(d));
@@ -1664,7 +1644,7 @@
       submittedAt: new Date().toISOString()
     });
 
-    if(!SUBMIT_URL || SUBMIT_URL.indexOf("PASTE_YOUR_WEB_APP_URL_HERE") !== -1){
+    if(!SUBMIT_URL || SUBMIT_URL.indexOf("PASTE_YOUR_GK_WEB_APP_URL_HERE") !== -1){
       showThankYou(submission, "unconfigured");
       return;
     }
@@ -1718,7 +1698,6 @@
 
   function init(){
     CATEGORIES.forEach(renderCategoryCard);
-    renderPositions();
     renderStrengthImprovementRows();
     renderGoalBlocks();
     wire();
